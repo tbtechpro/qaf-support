@@ -3,22 +3,27 @@ import { useState } from "react";
 import { SCHEDULES } from "../../lib/seed";
 export default function Reminders() {
   const [prefs, setPrefs] = useState({ deadline: true, live: true, checkin: true, wa: false });
+  const t = (k: keyof typeof prefs) => setPrefs({ ...prefs, [k]: !prefs[k] });
   return (
-    <main style={{ maxWidth: 640, margin: "0 auto", padding: 16 }}>
-      <h2>Reminder prefs — 24h / 3h / 1h · Africa/Lagos (WAT)</h2>
-      {(Object.keys(prefs) as (keyof typeof prefs)[]).map((k) => (
-        <label key={k} style={{ display: "flex", justifyContent: "space-between", padding: 10, border: "1px solid #ddd", borderRadius: 8, margin: "6px 0" }}>
-          {k === "wa" ? "WhatsApp/email (opt-in only)" : k}<input type="checkbox" checked={prefs[k]} onChange={() => setPrefs({ ...prefs, [k]: !prefs[k] })} />
-        </label>
-      ))}
-      <p style={{ fontSize: 13, color: "#555" }}>In-app always. WhatsApp/email only if opted-in + verified. Pause/off per category. In-app gives no alert when closed.</p>
+    <main>
+      <div className="pills"><span className="pill hot">● 24H / 3H / 1H</span><span className="pill">Africa/Lagos (WAT)</span><span className="pill">Pause anytime</span></div>
+      <h2 style={{ fontSize: 30, margin: "10px 0" }}>Never miss <span className="grad">live or due</span></h2>
+      <div className="timeline"><span className="t">T-24h confirm</span><div className="tline" /><span className="t">T-3h nudge</span><div className="tline" /><span className="t done">T-1h join</span></div>
+      <div className="card">
+        <label className="switch">Assessment deadlines — exact time, action, source<input type="checkbox" checked={prefs.deadline} onChange={() => t("deadline")} /></label>
+        <label className="switch">Live sessions — same verified cohort link, shown personally<input type="checkbox" checked={prefs.live} onChange={() => t("live")} /></label>
+        <label className="switch">Weekly check-in prompt<input type="checkbox" checked={prefs.checkin} onChange={() => t("checkin")} /></label>
+        <label className="switch">In-app + Web Push (free, always)<input type="checkbox" checked disabled /></label>
+        <label className="switch">WhatsApp / email (opt-in + verified only)<input type="checkbox" checked={prefs.wa} onChange={() => t("wa")} /></label>
+      </div>
       {SCHEDULES.map((s, i) => (
-        <div key={i} style={{ border: "1px solid #ddd", borderRadius: 8, padding: 10, margin: "6px 0" }}>
-          <b>{s.title}</b> — {s.datetime_iso} ({s.timezone})<br />
-          {s.kind === "live_session" ? <>Join (same for cohort): {s.join_link || "Awaiting organizer confirmation"}</> : <>Action: {s.action}</>}<br />
-          <small>24h · 3h · 1h · Source: {s.source}</small>
+        <div key={i} className={`ev ${s.kind === "live_session" ? "live" : ""}`}>
+          <b>{s.kind === "live_session" ? "🎥" : "📝"} {s.title}</b> — {s.datetime_iso} ({s.timezone})<br />
+          {s.kind === "live_session" ? <>Join (same for cohort): <u>{s.join_link || "Awaiting organizer confirmation"}</u></> : <>Action: {s.action}</>}<br />
+          <small>⏰ 24h · 3h · 1h · Source: {s.source} · in-app always{prefs.wa ? " + WhatsApp/email" : ""}</small>
         </div>
       ))}
+      <p className="meta">Missing schedule/link → “Awaiting organizer confirmation”, never invented. Changed date/link → old withdrawn, revised flagged. In-app gives no alert while closed.</p>
     </main>
   );
 }
