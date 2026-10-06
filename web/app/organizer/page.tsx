@@ -1,33 +1,80 @@
 "use client";
 import { useEffect, useState } from "react";
 import { loadExtra, saveExtra, validate, type Extra } from "../../lib/schedules";
+import { bootstrapOwner as _b, createInvite, currentOrg, loadInvites, loadOrgs, logout, redeem, requestAccessLink, type Org } from "../../lib/organizers";
+void _b;
 type Form = { kind: "live_session" | "deadline"; title: string; datetime_iso: string; timezone: string; join_link: string; source: string; action: string };
 const EMPTY: Form = { kind: "live_session", title: "", datetime_iso: "", timezone: "Africa/Lagos", join_link: "", source: "", action: "" };
 export default function Organizer() {
-  const [ok, setOk] = useState(false);
-  const [pw, setPw] = useState("");
+  const [me, setMe] = useState<Org | null>(null);
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [err, setErr] = useState("");
   const [items, setItems] = useState<Extra[]>([]);
   const [f, setF] = useState<Form>({ ...EMPTY });
-  const [err, setErr] = useState("");
+  const [ferr, setFerr] = useState("");
   const [msg, setMsg] = useState("");
-  useEffect(() => { setItems(loadExtra()); }, []);
+  const [inviteFor, setInviteFor] = useState("");
+  const [invites, setInvites] = useState(loadInvitesSafe());
+  const [orgs, setOrgs] = useState<Org[]>([]);
+  useEffect(() => { setMe(currentOrg()); setItems(loadExtra()); setOrgs(loadOrgs()); setInvites(loadInvites()); }, []);
   const persist = (next: Extra[]) => { setItems(next); saveExtra(next); };
-  if (!ok) return (<main><div className="card" style={{ maxWidth: 460, margin: "40px auto" }}><h2>🔒 Organizer only</h2><p className="meta">Restricted workspace. Learners can never approve content or see others’ chats. (Pilot stub — PocketBase auth in production.)</p><input value={pw} onChange={(e) => setPw(e.target.value)} onKeyDown={(e) => e.key === "Enter" && pw && setOk(true)} placeholder="Organizer passcode" style={{ width: "100%", padding: 12, borderRadius: 12, border: "1px solid var(--line)", background: "#111a36", color: "#fff" }} /><button className="btn btn-p" style={{ marginTop: 10, width: "100%" }} onClick={() => pw && setOk(true)}>Unlock workspace</button></div></main>);
+  function loadInvitesSafe() { try { return loadInvites(); } catch { return []; } }
+
+  if (!me) return (
+    <main>
+      <div className="card" style={{ maxWidth: 480, margin: "30px auto" }}>
+        <div className="pills"><span className="pill hot">● ORGANIZER SIGN-IN</span><span className="pill">Invite only</span></div>
+        <h2>🔒 Organizer access</h2>
+        <p className="meta">Restricted workspace — learners can never approve content or see others’ chats. Live: PocketBase accounts (email + password or Google, allowlisted). Pilot: email + single-use invite code below.</p>
+        <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.org" style={inp} />
+        <input value={code} onChange={(e) => setCode(e.target.value)} onKeyDown={(e) => e.key === "Enter" && go()} placeholder="Invite code e.g. QAF-AB12CD (first organizer: any code)" style={{ ...inp, marginTop: 8 }} />
+        {err && <p style={{ color: "var(--rose)" }}>{err}</p>}
+        <button className="btn btn-p" style={{ marginTop: 10, width: "100%" }} onClick={go}>Sign in →</button>
+        <p className="meta">No code? <a href={requestAccessLink(process.env.NEXT_PUBLIC_ADMIN_WHATSAPP || "", email || "my email")} target="_blank">Request access via WhatsApp →</a> (owner sends you a one-time code in a DM).</p>
+      </div>
+    </main>
+  );
+  function go() {
+    const r = redeem(email, code);
+    if (!r.ok) { setErr(r.msg); return; }
+    setMe(r.org!); setOrgs(loadOrgs()); setInvites(loadInvites()); setErr("");
+  }
   const submit = () => {
     const v = validate(f);
-    if (v) { setErr(v); return; }
-    setErr("");
-    persist([...items, { ...f, cohort_id: "pilot-2026-01", id: `org-${Date.now()}` }]);
-    setMsg(`Saved “${f.title}” — 24h/3h/1h reminders queued, old ones withdrawn on edit.`);
+    if (v) { setFerr(v); return; }
+    setFerr("");
+    persist([...items, { ...f, cohort_id: "pilot-2026-01", id: `org-${Date.now()}`, publishedBy: me.email }]);
+    setMsg(`Saved “${f.title}” as ${me.email} — 24h/3h/1h queued, old ones withdrawn on edit.`);
     setF({ ...EMPTY });
   };
   const withdraw = (id: string) => persist(items.map((x) => (x.id === id ? { ...x, withdrawn: true } : x)));
   const live = items.filter((x) => !x.withdrawn);
+  const mkInvite = () => {
+    if (!inviteFor.includes("@")) { setMsg("Enter an email to invite."); return; }
+    const inv = createInvite(inviteFor);
+    setInvites(loadInvites()); setInviteFor("");
+    setMsg(`Invite for ${inv.email}: ${inv.code} — share it in a private DM (not the group). Single use.`);
+  };
   return (
     <main>
-      <div className="pills"><span className="pill hot">● ORGANIZER FEED</span><span className="pill">Links + deadlines in</span><span className="pill">24/3/1 out</span></div>
+      <div className="pills"><span className="pill hot">● {me.role.toUpperCase()}: {me.email}</span><span className="pill">Feed links + deadlines</span><button className="pill" style={{ cursor: "pointer" }} onClick={() => { logout(); setMe(null); }}>Sign out</button></div>
       <h2 style={{ fontSize: 30, margin: "10px 0" }}>Feed the <span className="grad">system</span></h2>
-      <div className="card">
+      {me.role === "owner" && (
+        <div className="card">
+          <h3>✉️ Invite organizers (free, no vendor)</h3>
+          <p className="meta">Create a single-use code per email. Share privately (WhatsApp DM). They sign in at <u>/organizer</u> — no link guessable, every publish is attributed.</p>
+          <div className="cbar" style={{ border: 0, padding: 0, background: "transparent" }}>
+            <input value={inviteFor} onChange={(e) => setInviteFor(e.target.value)} placeholder="organizer@example.org" />
+            <button onClick={mkInvite}>Create code</button>
+          </div>
+          {invites.filter((i) => !i.used).length > 0 && <table style={{ marginTop: 8 }}><thead><tr><th>Email</th><th>Code</th><th>Status</th></tr></thead><tbody>
+            {invites.filter((i) => !i.used).map((i, k) => (<tr key={k}><td>{i.email}</td><td>{i.code}</td><td>unused</td></tr>))}
+          </tbody></table>}
+          <p className="meta">Team: {orgs.map((o) => `${o.email} (${o.role})`).join(" · ") || "just you"}</p>
+        </div>
+      )}
+      <div className="card" style={{ marginTop: 14 }}>
         <h3>{f.kind === "live_session" ? "🎥 New live session (meeting link)" : "📝 New submission deadline"}</h3>
         <div style={{ display: "grid", gap: 8, marginTop: 10 }}>
           <div style={{ display: "flex", gap: 8 }}>
@@ -40,18 +87,16 @@ export default function Organizer() {
             ? <input value={f.join_link} onChange={(e) => setF({ ...f, join_link: e.target.value })} placeholder="https:// meeting link (same for cohort)" style={inp} />
             : <input value={f.action} onChange={(e) => setF({ ...f, action: e.target.value })} placeholder="Action e.g. Submit on learn.qubators.org" style={inp} />}
           <input value={f.source} onChange={(e) => setF({ ...f, source: e.target.value })} placeholder="Source e.g. Schedule v2, 20-Oct-2026" style={inp} />
-          {err && <p style={{ color: "var(--rose)" }}>{err}</p>}
+          {ferr && <p style={{ color: "var(--rose)" }}>{ferr}</p>}
           {msg && <p style={{ color: "var(--emerald)" }}>{msg}</p>}
-          <button className="btn btn-p" onClick={submit}>Publish → queue 24h / 3h / 1h</button>
-          <p className="meta">Timezone saved as Africa/Lagos (WAT). Editing an event withdraws its old reminders. Missing link/date → learners see “Awaiting organizer confirmation”.</p>
+          <button className="btn btn-p" onClick={submit}>Publish as {me.email} → queue 24h / 3h / 1h</button>
         </div>
       </div>
       <div className="card" style={{ marginTop: 14 }}>
-        <h3>Fed this pilot ({live.length}) + seed</h3>
-        <table><thead><tr><th>Event</th><th>Date</th><th>Link / Action</th><th></th></tr></thead><tbody>
-          {live.map((s) => (<tr key={s.id}><td>{s.title}</td><td>{s.datetime_iso}</td><td>{s.kind === "live_session" ? s.join_link : s.action}</td><td><button onClick={() => withdraw(s.id)} style={linkBtn}>withdraw</button></td></tr>))}
+        <h3>Published ({live.length}) — attributed</h3>
+        <table><thead><tr><th>Event</th><th>Date</th><th>Link / Action</th><th>By</th><th></th></tr></thead><tbody>
+          {live.map((s) => (<tr key={s.id}><td>{s.title}</td><td>{s.datetime_iso}</td><td>{s.kind === "live_session" ? s.join_link : s.action}</td><td>{s.publishedBy || "—"}</td><td><button onClick={() => withdraw(s.id)} style={linkBtn}>withdraw</button></td></tr>))}
         </tbody></table>
-        {live.length === 0 && <p className="meta">Nothing fed yet — seed shows Orientation Live + Assessment 1 below on learner screens.</p>}
       </div>
     </main>
   );

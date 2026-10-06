@@ -3,7 +3,7 @@
 // Rules: confirmed only; date + tz + source required; sessions need https join link;
 // missing -> "Awaiting organizer confirmation", never invented; edit withdraws old reminders.
 import { SCHEDULES as SEED, type Schedule } from "./seed";
-export type Extra = Schedule & { id: string; withdrawn?: boolean };
+export type Extra = Schedule & { id: string; withdrawn?: boolean; publishedBy?: string };
 const KEY = "qaf-schedules-extra";
 export function loadExtra(): Extra[] {
   try { const s = localStorage.getItem(KEY); return s ? JSON.parse(s) : []; } catch { return []; }
