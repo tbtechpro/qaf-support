@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>QAF Support — Architecture + Product Demo</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0f172a;color:#e2e8f0}
+header{padding:20px;max-width:1100px;margin:auto}h1{margin:0 0 6px;font-size:28px}p.sub{color:#94a3b8;margin:0 0 16px}
+.badges{display:flex;gap:8px;flex-wrap:wrap}.badge{background:#16a34a;color:#fff;padding:4px 10px;border-radius:999px;font-size:12px}
+.wrap{max-width:1100px;margin:auto;padding:0 20px 60px}
+.card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:18px;margin:14px 0}
+h2{margin:6px 0 12px;font-size:20px}h3{margin:12px 0 8px;font-size:15px;color:#7dd3fc}
+.arch{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.box{background:#0f172a;border:1px solid #475569;border-radius:10px;padding:10px;font-size:13px}.box b{display:block;margin-bottom:4px;color:#fff}.arrow{text-align:center;color:#64748b;font-size:12px;margin:4px 0}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.tab{border:1px solid #475569;background:#0f172a;color:#e2e8f0;padding:8px 14px;border-radius:999px;cursor:pointer}.tab.active{background:#2563eb;border-color:#2563eb}
+.panel{display:none}.panel.active{display:block}
+.phone{max-width:420px;margin:auto;background:#fff;color:#111;border-radius:18px;overflow:hidden;border:1px solid #334155}
+.phone-head{background:#111827;color:#fff;padding:12px 14px;font-weight:600}.chat{padding:12px;height:340px;overflow:auto;background:#f1f5f9;display:flex;flex-direction:column;gap:8px}
+.bub{max-width:85%;padding:10px 12px;border-radius:14px;font-size:14px;line-height:1.4}.bot{background:#fff;border:1px solid #e2e8f0;align-self:flex-start}.user{background:#2563eb;color:#fff;align-self:flex-end}
+.meta{font-size:11px;color:#64748b;margin-top:4px}.row{display:flex;gap:8px;padding:10px;background:#fff;border-top:1px solid #e2e8f0}.row input{flex:1;padding:10px;border:1px solid #cbd5e1;border-radius:10px}.row button{padding:10px 14px;border-radius:10px;border:0;background:#16a34a;color:#fff;cursor:pointer}
+.chips{display:flex;gap:6px;flex-wrap:wrap;padding:0 10px 10px;background:#f1f5f9}.chip{background:#e0e7ff;border:1px solid #c7d2fe;color:#1e40af;font-size:12px;padding:6px 10px;border-radius:999px;cursor:pointer}
+.feedback{display:flex;gap:8px;margin-top:8px}.feedback button{font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid #cbd5e1;background:#fff;cursor:pointer}
+.timeline{display:flex;align-items:center;gap:8px;margin:10px 0;flex-wrap:wrap}.pill{background:#0ea5e9;color:#fff;padding:6px 10px;border-radius:999px;font-size:12px}.line{flex:1;height:2px;background:#334155;min-width:20px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:8px;border-bottom:1px solid #334155}th{color:#93c5fd}
+.switch{display:flex;justify-content:space-between;align-items:center;background:#0f172a;border:1px solid #475569;border-radius:10px;padding:10px;margin:6px 0;font-size:14px}
+.note{font-size:12px;color:#94a3b8}.tour{position:sticky;bottom:12px;display:flex;gap:8px;justify-content:center;margin-top:14px}.tour button{background:#f59e0b;border:0;padding:10px 16px;border-radius:999px;font-weight:700;cursor:pointer}
+a{color:#7dd3fc}
+@media(max-width:700px){.arch{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+<h1>QAF Support — Architecture + Demo</h1>
+<p class="sub">One programme · one pilot cohort · 24h / 3h / 1h early reminders (sessions + deadlines) · same cohort link · organizer nudges · 100% free self-host</p>
+<div class="badges"><span class="badge">Zero-cost pilot</span><span class="badge">No Supabase</span><span class="badge">No Vercel</span><span class="badge">No Resend</span><span class="badge">wa.me handoff</span><span class="badge">WAT default</span></div>
+</header>
+<div class="wrap">
+
+<div class="card">
+<h2>1. Architectural design</h2>
+<p class="note">Single Oracle Always Free VM (4 OCPU / 24GB / 200GB / 10TB). All containers free. View file: <a href="https://github.com/tbtechpro/qaf-support/blob/main/docs/ARCHITECTURE.md">ARCHITECTURE.md</a></p>
+<div class="arch">
+<div class="box"><b>Learner PWA</b>Next.js :3000<br/>chat · plan · prefs · feedback<br/>in-app inbox + Web Push</div>
+<div class="box"><b>Caddy :80/443</b>TLS + reverse proxy<br/>/ → web · /pb/* → PocketBase<br/>Cloudflare Tunnel free</div>
+<div class="box"><b>PocketBase :8090</b>auth · cohorts · schedules + same link<br/>plans · inbox · feedback · RLS</div>
+<div class="box"><b>Worker (node-cron 15m)</b>due = event − (24h|3h|1h)<br/>confirmed only · withdraw on change<br/>no dups · never invent</div>
+<div class="box"><b>Redis :6379</b>BullMQ queue<br/>unlimited jobs<br/>free self-host</div>
+<div class="box"><b>Ollama :11434</b>llama3.1:8b-q4 local<br/>unlimited · private<br/>+ optional Gemini free fallback</div>
+</div>
+<div class="arrow">Uptime Kuma :3001 keeps VM warm · nightly tar backup · Jitsi / Meet link = same verified cohort URL</div>
+<h3>Reminder flow (sessions + deadlines)</h3>
+<div class="timeline"><span class="pill">T-24h confirm</span><div class="line"></div><span class="pill">T-3h nudge</span><div class="line"></div><span class="pill">T-1h join</span><div class="line"></div><span class="pill">Live / Due</span></div>
+<p class="note">Learner: in-app always + Web Push; SMTP/wa.me-manual only if opted-in. Organizer: 24h confirm-link + 1h join. Missing link/date → “Awaiting organizer confirmation”.</p>
+</div>
+
+<div class="card">
+<h2>2. Product demo — what it will look like</h2>
+<p class="note">Clickable mock with seed data (Orientation Live 13 Oct 18:00 WAT · Assessment 1 due 18 Oct 23:59 WAT). No backend yet. Press “Play tour” for video-like walkthrough, then screen-record if you need an mp4.</p>
+<div class="tabs">
+<button class="tab active" data-t="chat">Learner chat</button>
+<button class="tab" data-t="plan">Weekly plan</button>
+<button class="tab" data-t="rem">Reminders 24/3/1</button>
+<button class="tab" data-t="org">Organizer</button>
+</div>
+
+<div class="panel active" id="p-chat">
+<div class="phone"><div class="phone-head">QAF Support · private</div>
+<div class="chat" id="chat"></div>
+<div class="chips">
+<span class="chip" data-q="How do I submit Assessment 1?">How do I submit?</span>
+<span class="chip" data-q="Where is the live session link?">Session link?</span>
+<span class="chip" data-q="I am behind">I’m behind</span>
+</div>
+<div class="row"><input id="qin" placeholder="Ask… e.g. How do I submit?"/><button onclick="send()">Send</button></div>
+</div>
+</div>
+
+<div class="panel" id="p-plan">
+<div class="phone"><div class="phone-head">My weekly plan (personal ≠ official)</div>
+<div style="padding:12px;background:#f8fafc;color:#111">
+<label style="display:block;padding:8px;border:1px solid #e2e8f0;border-radius:10px;margin:6px 0"><input type="checkbox"/> Watch orientation recap (30m)</label>
+<label style="display:block;padding:8px;border:1px solid #e2e8f0;border-radius:10px;margin:6px 0"><input type="checkbox" checked/> Draft prototype problem statement</label>
+<label style="display:block;padding:8px;border:1px solid #e2e8f0;border-radius:10px;margin:6px 0"><input type="checkbox"/> Join Orientation Live — same cohort link</label>
+<p class="meta">Completing this checklist ≠ completing official assessment. Official due: Assessment 1, 18 Oct 23:59 WAT.</p>
+</div></div>
+</div>
+
+<div class="panel" id="p-rem">
+<div class="switch"><span>Assessment deadlines — 24h / 3h / 1h · WAT visible</span><input type="checkbox" checked onchange="tog(this)"/></div>
+<div class="switch"><span>Live sessions — same cohort link, personally shown</span><input type="checkbox" checked onchange="tog(this)"/></div>
+<div class="switch"><span>Weekly check-in prompt</span><input type="checkbox" checked onchange="tog(this)"/></div>
+<div class="switch"><span>Channel: in-app + Web Push (free)</span><input type="checkbox" checked disabled/></div>
+<div class="switch"><span>Channel: WhatsApp/email (opt-in only)</span><input type="checkbox" onchange="tog(this)"/></div>
+<div class="card" style="background:#0f172a"><b>Hi Ada 👋 — Orientation Live, 13 Oct 18:00 WAT</b><br/>Join: https://meet.example.org/qaf-orientation (same for cohort)<br/><span class="note">T-24h · T-3h · T-1h · Source: Schedule v1 · Africa/Lagos</span></div>
+<div class="card" style="background:#0f172a"><b>Assessment 1 due, 18 Oct 23:59 WAT</b><br/>Action: Submit on learn.qubators.org<br/><span class="note">T-24h · T-3h · T-1h · Source: Schedule v1</span></div>
+</div>
+
+<div class="panel" id="p-org">
+<table><tr><th>Session / Deadline</th><th>Date (WAT)</th><th>Link</th><th>24/3/1</th></tr>
+<tr><td>Orientation Live</td><td>13 Oct 18:00</td><td>meet.example.org/qaf-orientation</td><td>queued</td></tr>
+<tr><td>Assessment 1 due</td><td>18 Oct 23:59</td><td>—</td><td>queued</td></tr></table>
+<table style="margin-top:10px"><tr><th>Unresolved</th><th>Reason</th><th>Status</th></tr><tr><td>“Which Assessment?”</td><td>ambiguous</td><td>needs review</td></tr><tr><td>“Link looks wrong”</td><td>possible inaccuracy</td><td>needs review</td></tr></table>
+<p class="note">Restricted to authorized organizers. Learners never see others’ chats. Organizer gets 24h confirm-link + 1h join nudges.</p>
+</div>
+
+<div class="tour"><button onclick="tour()">▶ Play tour (video-like)</button></div>
+<p class="note">Demo video note: this page is the demo — I can’t render mp4 here, but press Play tour and screen-record (Windows: Win+Alt+R, Mac: Cmd+Shift+5) to make the video. Script: chat → plan → reminders → organizer → handoff.</p>
+</div>
+
+<div class="card"><h2>3. Links to view</h2>
+<p>Repo: <a href="https://github.com/tbtechpro/qaf-support">tbtechpro/qaf-support</a><br/>Plan: <a href="https://github.com/tbtechpro/qaf-support/blob/main/docs/IMPLEMENTATION_PLAN.md">IMPLEMENTATION_PLAN.md</a><br/>Arch: <a href="https://github.com/tbtechpro/qaf-support/blob/main/docs/ARCHITECTURE.md">ARCHITECTURE.md</a><br/>Local file: <code>docs/demo.html</code> — double-click to open.</p></div>
+
+</div>
+<script>
+const chat=document.getElementById('chat');
+function add(who,text,meta){const d=document.createElement('div');d.className='bub '+(who==='bot'?'bot':'user');d.innerHTML=text+(meta?'<div class="meta">'+meta+'</div>':'');chat.appendChild(d);chat.scrollTop=chat.scrollHeight;return d;}
+function botReply(q){
+  q=q.toLowerCase();
+  if(q.includes('submit')||q.includes('assessment')){
+    add('bot','<b>Assessment 1 — approved steps:</b><br/>1. Open learn.qubators.org → Assessments → Assessment 1<br/>2. Upload → Confirm<br/>Source: Learner Guide v1.<br/><div class="feedback"><button>This helped</button><button>Not quite</button><button>★ Rate</button></div>','Which assessment? I assumed Assessment 1 — tell me if different.');
+  } else if(q.includes('link')||q.includes('session')||q.includes('live')){
+    add('bot','<b>Hi! Orientation Live — 13 Oct 18:00 WAT</b><br/>Join (same for cohort): https://meet.example.org/qaf-orientation<br/>Source: Schedule v1. You’ll get 24h / 3h / 1h nudges.<br/><div class="feedback"><button>This helped</button><button>WhatsApp organizer →</button></div>','Africa/Lagos · verified link');
+  } else if(q.includes('behind')){
+    add('bot','Got it. How many hours have you got this week + what stage? I’ll make a manageable next step. Note: personal plan ≠ deadline waiver.<br/>Would a simple example or step-by-step help more?','No guilt — small steps.');
+  } else {
+    add('bot','I’m not sure from approved docs — I won’t guess. I’ve prepared a WhatsApp summary for the organizer you can review and send.<br/><div class="feedback"><button>Review WhatsApp summary</button></div>','Escalation: missing/conflicting info');
+  }
+}
+function send(){const i=document.getElementById('qin');if(!i.value.trim())return;add('user',i.value);const q=i.value;i.value='';setTimeout(()=>botReply(q),400);}
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{add('user',c.dataset.q);setTimeout(()=>botReply(c.dataset.q),400);});
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));t.classList.add('active');document.getElementById('p-'+t.dataset.t).classList.add('active');});
+function tog(el){el.checked?null:null;}
+add('bot','Welcome to QAF Support. What would you like help with today?','Private · name optional');
+let ti=0;const steps=[()=>document.querySelector('[data-t="chat"]').click(),()=>{add('user','Where is the live session link?');setTimeout(()=>botReply('Where is the live session link?'),500)},()=>document.querySelector('[data-t="plan"]').click(),()=>document.querySelector('[data-t="rem"]').click(),()=>document.querySelector('[data-t="org"]').click(),()=>document.querySelector('[data-t="chat"]').click()];
+function tour(){ti=0;const iv=setInterval(()=>{if(ti>=steps.length){clearInterval(iv);return;}steps[ti++]();},1600);}
+document.getElementById('qin').addEventListener('keydown',e=>{if(e.key==='Enter')send();});
+</script>
+</body>
+</html>
