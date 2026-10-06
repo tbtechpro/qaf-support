@@ -1,0 +1,12 @@
+# Production Caddy: copy to Caddyfile on VM and set DOMAIN + EMAIL.
+# {$DOMAIN} e.g. qaf.yourdomain.org — DNS A record must point at the VM first.
+{$DOMAIN} {
+	encode gzip
+	handle /pb/* {
+		uri strip_prefix /pb
+		reverse_proxy pocketbase:8090
+	}
+	handle {
+		reverse_proxy web:3000
+	}
+}

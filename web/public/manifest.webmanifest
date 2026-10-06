@@ -1,1 +1,1 @@
-{"name":"QAF Support","short_name":"QAF","start_url":"/","display":"standalone","background_color":"#0f172a","theme_color":"#16a34a","description":"QAF Support pilot: answers, 24h/3h/1h reminders, WhatsApp handoff."}
+{"name":"QAF Support","short_name":"QAF","start_url":"/","display":"standalone","background_color":"#0d1428","theme_color":"#10d9a3","description":"QAF Support pilot: answers, 24h/3h/1h reminders, WhatsApp handoff.","icons":[{"src":"/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}]}
