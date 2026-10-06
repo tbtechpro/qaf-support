@@ -20,20 +20,20 @@ This repo currently holds the product definition. Implementation follows after P
 - Optional learner context, follow-up questions, continuity
 - Answers grounded in approved docs, FAQs, designated website pages, authorized learning-platform resources
 - Supplementary general learning advice from reviewed sources (labeled separately)
-- Personal weekly plan + in-app-only reminders (deadlines, live sessions, weekly check-in, WAT default)
+- Personal weekly plan + opt-in early reminders (24h + 3h + 1h before deadlines and live sessions, same cohort link shown personally, WAT default). In-app by default, optional WhatsApp/email/push where opted in
 - Helpfulness feedback, star ratings, repair journey for unsatisfactory answers
 - Learner-controlled WhatsApp handoff to confirmed organizer
-- Organizer workspace: content review, schedules, gaps, feedback, pilot monitoring
+- Organizer workspace: content review, schedules + verified links, gaps, feedback, pilot monitoring, plus organizer session reminders
 
 ## What V1 defers
 
 - Bot inside WhatsApp groups / DMs
-- Automatic WhatsApp broadcasts, email / push outside web app
+- Unsolicited bulk broadcasts without opt-in and verified contact
 - Multi-org / multi-cohort support
 - Private course content without authorization
 - Automated grading, certificates, extensions, permission changes
 
-Reminders appear **within QAF Support only** — no alert guarantee when app is closed.
+Reminders are **in-app by default** + optional 24h/3h/1h early reminders via WhatsApp/email/push where opted in. Same verified cohort link for all learners. In-app gives no alert guarantee when app is closed.
 
 ## Pilot targets (proposed, to confirm vs baseline)
 

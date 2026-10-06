@@ -41,21 +41,21 @@ The first working release serves **one programme and one pilot cohort**. The pil
 - Optional learner context, relevant follow-up questions and conversation continuity.
 - Answers grounded in approved documents, FAQs, designated website pages and authorized learning-platform resources.
 - Supplementary learning and productivity guidance from reviewed, reliable external sources.
-- A personal weekly plan and optional in-app reminders for approved deadlines, live sessions and weekly learning check-ins.
+- A personal weekly plan and opt-in early reminders for approved assessment deadlines and live sessions (24h + 3h + 1h before, same verified cohort join link shown personally) plus weekly learning check-ins. In-app by default, with optional WhatsApp/email/push where the learner has opted in.
 - Helpfulness feedback, optional star ratings and a repair journey for unsatisfactory answers.
 - A learner-controlled WhatsApp handoff to a confirmed organizer.
-- An organizer workspace for content review, confirmed schedules, support gaps and feedback.
+- An organizer workspace for content review, confirmed schedules, support gaps and feedback, plus organizer reminders for upcoming sessions and deadlines.
 
 ### Deferred
 
 - A bot operating inside WhatsApp groups or private WhatsApp conversations.
-- Automatic WhatsApp broadcasts, email reminders or push notifications outside the web application.
+- Unsolicited bulk WhatsApp broadcasts, email or push without learner/organizer opt-in and verified contact.
 - Support for multiple organizations or multiple cohorts in the first pilot.
 - Access to private course content without organizer authorization.
 - Automated grading, certificate decisions, deadline extensions or account-permission changes.
 - A replacement for the learning platform or a full course-delivery system.
 
-**Reminder boundary:** Version 1 reminders appear within QAF Support. Learners must be told where reminders appear and that they do not guarantee an alert while the application is closed.
+**Reminder boundary:** Version 1 reminders appear in-app by default, with optional 24h/3h/1h early reminders via WhatsApp/email/push only where the learner has opted in and the contact is verified. Learners must be told where each reminder appears, that in-app does not guarantee an alert while the application is closed, and that each category can be paused or switched off. Live sessions use the same verified cohort join link for all learners, shown personally; never invent a link.
 
 ## 4. Goals and success measures
 
@@ -148,11 +148,11 @@ Reminder categories are separate choices:
 - Confirmed assessment deadlines for the learner’s cohort.
 - Confirmed live sessions for the learner’s cohort.
 
-Learners can choose reminder timing, pause categories or switch reminders off. The chosen timezone must be visible; WAT is the starting default for the pilot, with adjustment for learners elsewhere.
+Learners can choose reminder timing (default 24h + 3h + 1h before confirmed assessment deadlines and confirmed live sessions), pause categories or switch reminders off. The chosen timezone must be visible; WAT is the starting default for the pilot, with adjustment for learners elsewhere. Delivery is in-app always, plus WhatsApp/email/push only where the learner has opted in and the contact is verified. Learners must be told where each reminder appears.
 
-Each deadline reminder must identify the assessment, exact date and time, timezone, required action and approved source. Session reminders must include a verified joining link when available. Never assume dates, infer missing times or promise a session recording.
+Each deadline reminder must identify the assessment, exact date and time, timezone, required action and approved source. Session reminders must include the same verified cohort joining link for all learners, shown personally (with first name when known), plus session, date/time/timezone and approved source. Never assume dates, infer missing times, invent a link or promise a session recording.
 
-If the schedule is missing, show “Awaiting organizer confirmation” rather than an invented reminder. When an organizer changes a date, the old reminder must be withdrawn and the revised information clearly identified. Avoid duplicate reminders and notifications for unrelated cohorts.
+If the schedule or session link is missing, show “Awaiting organizer confirmation” rather than an invented reminder. When an organizer changes a date or link, the old reminder must be withdrawn and the revised information clearly identified. Avoid duplicate reminders and notifications for unrelated cohorts.
 
 ## 9. Satisfaction and answer repair
 
@@ -192,7 +192,8 @@ Organizers need to manage the information that makes support trustworthy and act
 | --- | --- |
 | Approve support content | Review documents, FAQs, official pages and authorized learning resources before use |
 | Maintain current information | Identify the responsible content owner, relevant cohort and review date; withdraw superseded material |
-| Maintain schedules | Publish confirmed assessments and sessions with dates, times, timezones and supported links |
+| Maintain schedules | Publish confirmed assessments and sessions with dates, times, timezones, same-for-cohort verified join link, and 24h/3h/1h reminder schedule |
+| Receive organizer reminders | Get 24h confirm-link/schedule nudge and 1h join nudge for own cohort sessions/deadlines, in-workspace plus optional outside-workspace channel where opted in |
 | Manage handoff | Confirm the intended WhatsApp contact and any approved response-hour information |
 | Review unresolved questions | See the question, relevant context, reason for escalation and review status |
 | Review feedback | Distinguish helpfulness, ratings, reported inaccuracies and unresolved issues |
@@ -208,10 +209,11 @@ Designate an organizer responsible for content accuracy and a contact responsibl
 | A learner asks a common programme question | Receives the relevant approved answer and a source; can ask a follow-up |
 | A learner asks an ambiguous assessment question | Is asked which assessment they mean before instructions or dates are provided |
 | A learner needs a concept explained | Receives a suitable explanation and a relevant optional follow-up |
-| A learner needs to stay organized | Receives an editable personal plan and clear reminder choices |
+| A learner needs to stay organized | Receives an editable personal plan and clear reminder choices, including 24h/3h/1h early reminders with same cohort link |
+| An organizer has an upcoming session | Receives confirm-link and join nudges and can confirm schedule/link |
 | A learner rejects an answer | Receives a clarifying question and revised guidance, with a human route available |
 | A learner needs a personal decision | Receives an explanation of the limitation and a reviewable WhatsApp message |
-| An organizer changes a deadline | The answer and associated reminder reflect the approved revision; the old date is withdrawn |
+| An organizer changes a deadline | The answer and associated 24h/3h/1h reminders reflect the approved revision; the old date is withdrawn |
 | An organizer identifies a recurring gap | Adds or corrects approved information and reviews whether the gap is resolved |
 
 ## 13. Acceptance criteria for the working release
@@ -224,7 +226,8 @@ Designate an organizer responsible for content accuracy and a contact responsibl
 | External advice | Supplementary guidance is clearly distinguished from official programme instructions |
 | Personalization | Guidance reflects the learner’s supplied context without inventing progress or capabilities |
 | Feedback | Helpful, unhelpful and optional star feedback are usable; unhelpful responses lead to clarification or human help |
-| Reminders | Only confirmed cohort events receive programme reminders; timing, timezone and opt-out are clear |
+| Reminders | Only confirmed cohort deadlines/sessions trigger 24h/3h/1h reminders with the same verified link; timing, timezone, channel and opt-out are clear; no duplicates or wrong-cohort alerts |
+| Organizer reminders | Organizers receive confirm/join nudges for own cohort sessions via confirmed channel |
 | Handoff | Learners review a summary and can open the confirmed admin inbox; nothing is sent automatically |
 | Content updates | Withdrawn information no longer supports new answers or reminders |
 | Organizer access | Only authorized organizers can manage information or review private support issues |
@@ -250,7 +253,9 @@ The PRD defines the intended working release. Interface appearance alone is not 
 | Confirmed pilot cohort and intended learners | Programme organizers |
 | Current FAQ, learner guide and support policies | Content owner |
 | Authorized lesson and learning-platform material | Programme organizers |
-| Approved assessment and live-session schedule | Cohort coordinator |
+| Approved assessment and live-session schedule, including same-for-cohort verified join link per session | Cohort coordinator |
+| Learner reminder opt-ins and verified contacts (WhatsApp/email/push) plus timezone | Learners via opt-in, managed by support owner |
+| Organizer reminder contacts and channels | Support owner |
 | Confirmed admin WhatsApp number and escalation responsibilities | Support owner |
 | Pilot baseline, agreed targets and review sample | Product owner and organizers |
 | Review of the preview’s tone, journeys and reminder experience | Learners and organizers |
