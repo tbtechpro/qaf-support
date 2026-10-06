@@ -49,9 +49,25 @@ Report sample sizes, response rates, unresolved cases alongside %. Stars ≠ acc
 ## Repo layout
 
 ```
-doc/
-  QAF_Support_V1_PRD.md   # product requirements, source of truth for V1
-README.md                 # this file
+doc/ QAF_Support_V1_PRD.md   # product requirements, source of truth
+docs/ IMPLEMENTATION_PLAN.md # 100% free plan
+docs/ ARCHITECTURE.md        # single-VM ports, backup, first boot
+docs/ demo.html              # clickable architecture + product demo (double-click)
+docker-compose.yml Caddyfile # free self-host (no Supabase/Vercel/Resend)
+web/                         # Next.js PWA: ask/plan/reminders/organizer + /api/*
+worker/                      # 24h/3h/1h scheduler (15min tick, WAT)
+pocketbase/pb_migrations/    # cohorts, schedules, prefs, queue, feedback, docs
+content/seed/                # FAQ.md + schedule.csv (same cohort link)
+tests/run.mjs                # `node tests/run.mjs` — must pass
+```
+
+## Quickstart (free, VM)
+
+```
+cp .env.example .env   # fill ADMIN_WHATSAPP_E164, VAPID keys
+docker compose up -d --build
+docker exec ollama ollama pull llama3.1:8b-instruct-q4_K_M
+node tests/run.mjs && node pocketbase/seed_import.mjs
 ```
 
 ## Next steps
