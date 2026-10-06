@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { answer, waLink } from "../../lib/seed";
+import { allSchedules } from "../../lib/schedules";
 type M = { who: "bot" | "user"; text: string };
 export default function Ask() {
   const [msgs, setMsgs] = useState<M[]>([{ who: "bot", text: "Welcome to QAF Support. What would you like help with today? (Tell me what to call you — optional.)" }]);
@@ -10,6 +11,20 @@ export default function Ask() {
   const send = (preset?: string) => {
     const text = (preset ?? q).trim();
     if (!text) return;
+    const low = text.toLowerCase();
+    // Prefer organizer-fed feed for session links / deadlines (same cohort link, never invented).
+    if (low.includes("link") || low.includes("live") || low.includes("session") || low.includes("join") || low.includes("when") || low.includes("deadline") || low.includes("due")) {
+      const feed = allSchedules();
+      const ev = feed.find((x) => x.kind === "live_session" && (x as { withdrawn?: boolean }).withdrawn !== true);
+      if (ev && (low.includes("link") || low.includes("live") || low.includes("session") || low.includes("join"))) {
+        const hi = name.trim() ? `Hi ${name.trim()} — ` : "";
+        const body = ev.join_link ? `${hi}${ev.title} — ${ev.datetime_iso} (${ev.timezone}). Join (same for cohort): ${ev.join_link}. Source: ${ev.source}. You’ll get 24h / 3h / 1h nudges.`
+          : "Awaiting organizer confirmation for the session link — I won’t invent one.";
+        setMsgs((m) => [...m, { who: "user", text }, { who: "bot", text: body }]);
+        setQ("");
+        return;
+      }
+    }
     const r = answer(text, name.trim());
     setMsgs((m) => [...m, { who: "user", text }, { who: "bot", text: r.text + (r.escalation ? "\n\n🛟 Organizer needed — review the WhatsApp summary before sending. Nothing is sent automatically." : "") }]);
     setQ("");

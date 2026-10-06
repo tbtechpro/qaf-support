@@ -1,8 +1,11 @@
 "use client";
-import { useState } from "react";
-import { SCHEDULES } from "../../lib/seed";
+import { useEffect, useState } from "react";
+import { allSchedules } from "../../lib/schedules";
+import type { Schedule } from "../../lib/seed";
 export default function Reminders() {
   const [prefs, setPrefs] = useState({ deadline: true, live: true, checkin: true, wa: false });
+  const [sched, setSched] = useState<(Schedule & { id?: string })[]>([]);
+  useEffect(() => { setSched(allSchedules()); const t = setInterval(() => setSched(allSchedules()), 2000); return () => clearInterval(t); }, []);
   const t = (k: keyof typeof prefs) => setPrefs({ ...prefs, [k]: !prefs[k] });
   return (
     <main>
@@ -16,7 +19,7 @@ export default function Reminders() {
         <label className="switch">In-app + Web Push (free, always)<input type="checkbox" checked disabled /></label>
         <label className="switch">WhatsApp / email (opt-in + verified only)<input type="checkbox" checked={prefs.wa} onChange={() => t("wa")} /></label>
       </div>
-      {SCHEDULES.map((s, i) => (
+      {sched.filter((s) => (s.kind === "deadline" ? prefs.deadline : prefs.live)).map((s, i) => (
         <div key={i} className={`ev ${s.kind === "live_session" ? "live" : ""}`}>
           <b>{s.kind === "live_session" ? "🎥" : "📝"} {s.title}</b> — {s.datetime_iso} ({s.timezone})<br />
           {s.kind === "live_session" ? <>Join (same for cohort): <u>{s.join_link || "Awaiting organizer confirmation"}</u></> : <>Action: {s.action}</>}<br />
