@@ -1,0 +1,6 @@
+qaf.example.org {
+	reverse_proxy web:3000
+	handle /pb/* {
+		reverse_proxy pocketbase:8090
+	}
+}

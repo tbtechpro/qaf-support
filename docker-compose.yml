@@ -1,0 +1,81 @@
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+      - pocketbase
+
+  web:
+    build: ./web
+    restart: unless-stopped
+    environment:
+      - PB_URL=http://pocketbase:8090
+      - TZ=Africa/Lagos
+    depends_on:
+      - pocketbase
+      - redis
+    expose:
+      - "3000"
+
+  pocketbase:
+    image: ghcr.io/muchobien/pocketbase:latest
+    restart: unless-stopped
+    volumes:
+      - ./pocketbase/pb_data:/pb/pb_data
+      - ./pocketbase/pb_migrations:/pb/pb_migrations:ro
+    expose:
+      - "8090"
+    environment:
+      - TZ=Africa/Lagos
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    expose:
+      - "6379"
+
+  worker:
+    build: ./worker
+    restart: unless-stopped
+    environment:
+      - PB_URL=http://pocketbase:8090
+      - REDIS_URL=redis://redis:6379
+      - TZ=Africa/Lagos
+    depends_on:
+      - pocketbase
+      - redis
+
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    volumes:
+      - ollama_data:/root/.ollama
+    expose:
+      - "11434"
+    # On ARM VM: run llama3.1:8b-instruct-q4_K_M
+    # docker exec ollama ollama pull llama3.1:8b-instruct-q4_K_M
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    restart: unless-stopped
+    volumes:
+      - uptime_data:/app/data
+    expose:
+      - "3001"
+
+volumes:
+  caddy_data:
+  caddy_config:
+  redis_data:
+  ollama_data:
+  uptime_data:

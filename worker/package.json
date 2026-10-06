@@ -1,0 +1,8 @@
+{
+  "name": "qaf-support-worker",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": { "start": "node index.js" },
+  "dependencies": { "ioredis": "5.4.1" }
+}

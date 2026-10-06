@@ -1,0 +1,3 @@
+cohort_id,type,title,datetime_iso,timezone,join_link,source,action
+pilot-2026-01,live_session,Orientation Live,2026-10-13T18:00:00+01:00,Africa/Lagos,https://meet.example.org/qaf-orientation,Schedule v1 6-Oct-2026,Join via same cohort link
+pilot-2026-01,deadline,Assessment 1 due,2026-10-18T23:59:00+01:00,Africa/Lagos,,Schedule v1 6-Oct-2026,Submit on learn.qubators.org
