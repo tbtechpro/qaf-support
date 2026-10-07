@@ -10,13 +10,20 @@ NODE_VER="${NODE_VER:-20.19.0}"
 PB_BIN="$ROOT/pocketbase/bin/pocketbase"
 NODE_DIR="$ROOT/.codespace-tools/node-v${NODE_VER}-linux-x64"
 
-if [ ! -x "$NODE_DIR/bin/node" ]; then
-  echo "[start] downloading node $NODE_VER ..."
-  mkdir -p "$ROOT/.codespace-tools"
-  curl -sSL -o /tmp/node.tar.xz "https://nodejs.org/dist/v${NODE_VER}/node-v${NODE_VER}-linux-x64.tar.xz"
-  tar -xJf /tmp/node.tar.xz -C "$ROOT/.codespace-tools"
+if ldd --version 2>&1 | grep -qi musl; then
+  if ! command -v node >/dev/null; then
+    echo "[start] installing node via apk (musl) ..."
+    sudo /sbin/apk add --no-cache nodejs npm
+  fi
+else
+  if [ ! -x "$NODE_DIR/bin/node" ]; then
+    echo "[start] downloading node $NODE_VER ..."
+    mkdir -p "$ROOT/.codespace-tools"
+    curl -sSL -o /tmp/node.tar.xz "https://nodejs.org/dist/v${NODE_VER}/node-v${NODE_VER}-linux-x64.tar.xz"
+    tar -xJf /tmp/node.tar.xz -C "$ROOT/.codespace-tools"
+  fi
+  export PATH="$NODE_DIR/bin:$PATH"
 fi
-export PATH="$NODE_DIR/bin:$PATH"
 node --version; npm --version
 
 if [ ! -x "$PB_BIN" ]; then
