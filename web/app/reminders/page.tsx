@@ -1,15 +1,26 @@
 "use client";
 import { useEffect, useState } from "react";
-import { allSchedules } from "../../lib/schedules";
+import { allSchedules, fetchLive, mergeByTitle } from "../../lib/schedules";
 import type { Schedule } from "../../lib/seed";
 export default function Reminders() {
   const [prefs, setPrefs] = useState({ deadline: true, live: true, checkin: true, wa: false });
   const [sched, setSched] = useState<(Schedule & { id?: string })[]>([]);
-  useEffect(() => { setSched(allSchedules()); const t = setInterval(() => setSched(allSchedules()), 2000); return () => clearInterval(t); }, []);
+  const [live, setLive] = useState(false);
+  useEffect(() => {
+    const refresh = () => {
+      fetchLive().then(({ live: ok, items }) => {
+        setLive(ok);
+        setSched(mergeByTitle(items, allSchedules()));
+      }).catch(() => setSched(allSchedules()));
+    };
+    refresh();
+    const t = setInterval(refresh, 15000);
+    return () => clearInterval(t);
+  }, []);
   const t = (k: keyof typeof prefs) => setPrefs({ ...prefs, [k]: !prefs[k] });
   return (
     <main>
-      <div className="pills"><span className="pill hot">● 24H / 3H / 1H</span><span className="pill">Africa/Lagos (WAT)</span><span className="pill">Pause anytime</span></div>
+      <div className="pills"><span className="pill hot">● 24H / 3H / 1H</span><span className="pill">Africa/Lagos (WAT)</span><span className="pill">{live ? "● LIVE from organizers" : "○ Offline seed"}</span><span className="pill">Pause anytime</span></div>
       <h2 style={{ fontSize: 30, margin: "10px 0" }}>Never miss <span className="grad">live or due</span></h2>
       <div className="timeline"><span className="t">T-24h confirm</span><div className="tline" /><span className="t">T-3h nudge</span><div className="tline" /><span className="t done">T-1h join</span></div>
       <div className="card">

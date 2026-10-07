@@ -1,20 +1,22 @@
 "use client";
-import { useState } from "react";
-import { answer, waLink } from "../../lib/seed";
-import { allSchedules } from "../../lib/schedules";
+import { useEffect, useState } from "react";
+import { answer, waLink, type Schedule } from "../../lib/seed";
+import { allSchedules, fetchLive, mergeByTitle } from "../../lib/schedules";
 type M = { who: "bot" | "user"; text: string };
 export default function Ask() {
   const [msgs, setMsgs] = useState<M[]>([{ who: "bot", text: "Welcome to QAF Support. What would you like help with today? (Tell me what to call you — optional.)" }]);
   const [q, setQ] = useState("");
   const [name, setName] = useState("");
   const [vote, setVote] = useState("");
+  const [liveFeed, setLiveFeed] = useState<Schedule[]>([]);
+  useEffect(() => { fetchLive().then(({ items }) => setLiveFeed(items)).catch(() => {}); }, []);
   const send = (preset?: string) => {
     const text = (preset ?? q).trim();
     if (!text) return;
     const low = text.toLowerCase();
     // Prefer organizer-fed feed for session links / deadlines (same cohort link, never invented).
     if (low.includes("link") || low.includes("live") || low.includes("session") || low.includes("join") || low.includes("when") || low.includes("deadline") || low.includes("due")) {
-      const feed = allSchedules();
+      const feed = mergeByTitle(liveFeed, allSchedules());
       const ev = feed.find((x) => x.kind === "live_session" && (x as { withdrawn?: boolean }).withdrawn !== true);
       if (ev && (low.includes("link") || low.includes("live") || low.includes("session") || low.includes("join"))) {
         const hi = name.trim() ? `Hi ${name.trim()} — ` : "";
