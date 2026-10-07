@@ -3,3 +3,8 @@ node_modules/
 pb_data/
 *.log
 .env
+.env*.local
+.codespace-env
+.codespace-tools/
+web/next-env.d.ts
+web/dev.log

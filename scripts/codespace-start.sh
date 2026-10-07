@@ -24,12 +24,25 @@ elif ! command -v node >/dev/null 2>&1; then
 fi
 node --version; npm --version
 
+# Per-box secrets (gitignored): ADMIN_WHATSAPP_E164=23480... (owner sets once, rotates anytime).
+if [ -f "$ROOT/.codespace-env" ]; then
+  set -a; . "$ROOT/.codespace-env"; set +a
+fi
+export NEXT_PUBLIC_ADMIN_WHATSAPP="${NEXT_PUBLIC_ADMIN_WHATSAPP:-${ADMIN_WHATSAPP_E164:-}}"
+NEXT_PUBLIC_ADMIN_WHATSAPP="${NEXT_PUBLIC_ADMIN_WHATSAPP//[^0-9]/}"
+export NEXT_PUBLIC_ADMIN_WHATSAPP
+
 if [ -d "$ROOT/.git" ]; then
   git -C "$ROOT" fetch origin main >/dev/null 2>&1 || true
   if [ "$(git -C "$ROOT" rev-parse HEAD)" != "$(git -C "$ROOT" rev-parse origin/main 2>/dev/null || echo none)" ]; then
     git -C "$ROOT" pull --ff-only >/dev/null 2>&1 || true
     rm -rf "$ROOT/web/.next"
+    REBUILT=1
   fi
+fi
+if [ -f "$ROOT/.codespace-env" ] && [ ! -d "$ROOT/web/.next" -o "$ROOT/.codespace-env" -nt "$ROOT/web/.next" ]; then
+  rm -rf "$ROOT/web/.next"
+  REBUILT=1
 fi
 
 if [ ! -x "$PB_BIN" ]; then
@@ -52,6 +65,10 @@ fi
 if [ ! -d "$ROOT/web/.next" ]; then
   echo "[start] web build ..."
   (cd "$ROOT/web" && npm run build)
+fi
+if [ "${REBUILT:-0}" = 1 ]; then
+  pkill -f "[n]ext-server" 2>/dev/null || true
+  sleep 3
 fi
 if ! pgrep -f "next-server" >/dev/null && ! curl -s -o /dev/null -m 3 http://localhost:3000/; then
   echo "[start] web :3000 ..."
