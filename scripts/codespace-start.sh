@@ -10,19 +10,17 @@ NODE_VER="${NODE_VER:-20.19.0}"
 PB_BIN="$ROOT/pocketbase/bin/pocketbase"
 NODE_DIR="$ROOT/.codespace-tools/node-v${NODE_VER}-linux-x64"
 
-if ldd --version 2>&1 | grep -qi musl; then
-  if ! command -v node >/dev/null; then
-    echo "[start] installing node via apk (musl) ..."
-    sudo /sbin/apk add --no-cache nodejs npm
-  fi
-else
-  if [ ! -x "$NODE_DIR/bin/node" ]; then
-    echo "[start] downloading node $NODE_VER ..."
-    mkdir -p "$ROOT/.codespace-tools"
-    curl -sSL -o /tmp/node.tar.xz "https://nodejs.org/dist/v${NODE_VER}/node-v${NODE_VER}-linux-x64.tar.xz"
-    tar -xJf /tmp/node.tar.xz -C "$ROOT/.codespace-tools"
-  fi
+if [ ! -x "$NODE_DIR/bin/node" ]; then
+  echo "[start] downloading portable node $NODE_VER ..."
+  mkdir -p "$ROOT/.codespace-tools"
+  curl -sSL -o /tmp/node.tar.xz "https://nodejs.org/dist/v${NODE_VER}/node-v${NODE_VER}-linux-x64.tar.xz"
+  tar -xJf /tmp/node.tar.xz -C "$ROOT/.codespace-tools"
+fi
+if "$NODE_DIR/bin/node" --version >/dev/null 2>&1; then
   export PATH="$NODE_DIR/bin:$PATH"
+elif ! command -v node >/dev/null 2>&1; then
+  echo "[start] portable node unusable here; installing via apk ..."
+  sudo /sbin/apk add --no-cache nodejs npm
 fi
 node --version; npm --version
 
