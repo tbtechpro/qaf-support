@@ -9,6 +9,19 @@ export default function Plan() {
   }, []);
   useEffect(() => { if (items.length) try { localStorage.setItem("qaf-plan", JSON.stringify(items)); } catch {} }, [items]);
   const done = items.filter((i) => i.done).length;
+  const [hours, setHours] = useState("");
+  const [goal, setGoal] = useState("");
+  const [history, setHistory] = useState<{ d: string; done: number; total: number; hours: string; goal: string }[]>([]);
+  useEffect(() => { try { const h = localStorage.getItem("qaf-checkins"); if (h) setHistory(JSON.parse(h)); } catch {} }, []);
+  const checkin = () => {
+    const entry = { d: new Date().toISOString().slice(0, 10), done, total: items.length, hours: hours.trim() || "—", goal: goal.trim() || "—" };
+    const next = [entry, ...history].slice(0, 8);
+    setHistory(next);
+    try { localStorage.setItem("qaf-checkins", JSON.stringify(next)); } catch {}
+    setHours(""); setGoal("");
+    setItems((cur) => [...cur.filter((i) => !i.done), ...cur.filter((i) => i.done).map((i) => ({ ...i, done: false }))]);
+  };
+const box: React.CSSProperties = { padding: 12, borderRadius: 12, border: "1px solid var(--line)", background: "#111a36", color: "#fff", width: "100%" };
   return (
     <main>
       <div className="pills"><span className="pill hot">● {done}/{items.length} DONE</span><span className="pill">Personal ≠ official</span></div>
@@ -28,6 +41,20 @@ export default function Plan() {
         </div>
       </div>
       <p className="meta">Completing this checklist ≠ completing an official assessment. Official due: Assessment 1, 18 Oct 23:59 WAT.</p>
+      <div className="card" style={{ marginTop: 14 }}>
+        <h3>📝 Weekly check-in (30 seconds)</h3>
+        <p className="meta">Lock this week, seed next week. {history.length ? `Streak log: ${history.length} check-in(s), latest ${history[0].done}/${history[0].total} done.` : "No check-ins yet — first one starts your log."}</p>
+        <div style={{ display: "grid", gap: 8, marginTop: 8 }}>
+          <input value={hours} onChange={(e) => setHours(e.target.value)} placeholder="Hours available next week? e.g. 5" style={box} />
+          <input value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="One main goal? e.g. finish prototype draft" style={box} />
+          <button className="btn btn-p" onClick={checkin}>Check in → roll open items forward</button>
+        </div>
+        {history.length > 0 && (
+          <table style={{ marginTop: 10 }}><thead><tr><th>Date</th><th>Done</th><th>Hours</th><th>Goal</th></tr></thead><tbody>
+            {history.map((h, i) => (<tr key={i}><td>{h.d}</td><td>{h.done}/{h.total}</td><td>{h.hours}</td><td>{h.goal}</td></tr>))}
+          </tbody></table>
+        )}
+      </div>
     </main>
   );
 }

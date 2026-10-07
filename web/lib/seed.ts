@@ -28,3 +28,12 @@ export function waLink(adminE164: string, text: string) {
   if (!adminE164) return "";
   return `https://wa.me/${adminE164.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(text)}`;
 }
+// Repair journey (PRD Sec 9): one revised attempt per complaint, then human route. Never repeats the same text.
+export type RepairKind = "simpler" | "different" | "wrong" | "organizer";
+export function repairReply(kind: RepairKind, lastBot: string): { text: string; escalation: boolean } {
+  const short = lastBot.split("\n")[0].slice(0, 220);
+  if (kind === "simpler") return { text: `Simpler version: ${short}\nTell me which single step trips you up and I'll walk just that one. No jargon, one step at a time.`, escalation: false };
+  if (kind === "different") return { text: `Different angle on the same answer: ${short}\nExample-first: picture the finished result, then work backwards to today's smallest action. Want me to tailor it to your project stage?`, escalation: false };
+  if (kind === "wrong") return { text: `Thanks for flagging — I've marked this for organizer review so the underlying source gets fixed, not just this answer. In the meantime, treat it as unconfirmed and check with an organizer for anything deadline-critical.`, escalation: true };
+  return { text: `Understood — let's bring in a person. I'll prepare an editable WhatsApp summary of your question and what we've tried. Nothing sends until you approve it.`, escalation: true };
+}

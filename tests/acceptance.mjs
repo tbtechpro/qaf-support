@@ -88,6 +88,16 @@ red = orgs.redeem("stranger@example.org", inv.code);
 ok(!red.ok, "wrong email rejected");
 ok(orgs.requestAccessLink("2348078239107", "a@b.c").includes("wa.me/2348078239107"), "request-access points at admin");
 
+// --- repair journey: one revised attempt, never a repeat, human route after ---
+let rep = seed.repairReply("simpler", "Assessment 1 — approved steps: open X.");
+ok(!rep.escalation && /Simpler version/.test(rep.text) && rep.text !== "Assessment 1 — approved steps: open X.", "simpler revises, not repeats");
+rep = seed.repairReply("different", "Line one.\nLine two.");
+ok(!rep.escalation && /Different angle/.test(rep.text), "different reframes");
+rep = seed.repairReply("wrong", "Some claim.");
+ok(rep.escalation && /organizer review/.test(rep.text), "wrong flags source for review + escalates");
+rep = seed.repairReply("organizer", "Anything.");
+ok(rep.escalation && /editable WhatsApp summary/.test(rep.text), "organizer offers reviewable handoff");
+
 console.log(fail ? `\n${fail} FAILURES (${pass} passed)` : `\nALL PASS (${pass})`);
 rmSync(tmp, { recursive: true, force: true });
 process.exit(fail ? 1 : 0);
