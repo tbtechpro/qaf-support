@@ -1,32 +1,75 @@
 /// <reference path="../pb_data/types.d.ts" />
+// QAF collections for PocketBase v0.40 JSVM: create bare, then add Field instances.
+// Reads: schedules/cohorts/content_docs public (cohort-shared info), rest auth-only.
+// Writes: auth-only everywhere except feedback creation (anonymous learners).
+// Deletes: denied (withdraw instead).
 migrate((app) => {
-  const mk = (name, schema, rule = "@request.auth.id != ''") => {
-    let c;
-    try { c = app.findCollectionByNameOrId(name); }
-    catch (e) {
-      c = new Collection({ name, type: "base", listRule: rule, viewRule: rule, createRule: rule, updateRule: rule, deleteRule: null, schema });
+  const AUTH = "@request.auth.id != ''";
+  const mkBase = (name, listRule, viewRule, createRule, updateRule) => {
+    let c = null;
+    try { c = app.findCollectionByNameOrId(name); } catch (e) { c = null; }
+    if (!c) {
+      c = new Collection({ name, type: "base", listRule, viewRule, createRule, updateRule, deleteRule: null });
+      app.save(c);
+      c = app.findCollectionByNameOrId(name);
+    } else {
+      c.listRule = listRule; c.viewRule = viewRule; c.createRule = createRule; c.updateRule = updateRule; c.deleteRule = null;
       app.save(c);
     }
     return c;
   };
-  const text = (n, req = true) => ({ name: n, type: "text", required: req });
-  const bool = (n) => ({ name: n, type: "bool", required: false });
-  const date = (n, req = true) => ({ name: n, type: "date", required: req });
-  const rel = (n, col, req = false) => ({ name: n, type: "relation", required: req, collectionId: col, cascadeDelete: false, maxSelect: 1 });
-  const sel = (n, vals) => ({ name: n, type: "select", required: true, values: vals, maxSelect: 1 });
+  const addFields = (c, fields) => {
+    let changed = false;
+    for (const f of fields) {
+      let ok = false;
+      try { ok = !!c.fields.getByName(f.name); } catch (e) { ok = false; }
+      if (!ok) { c.fields.add(f); changed = true; }
+    }
+    if (changed) app.save(c);
+  };
+  const T = (name, required) => new TextField({ name, required: !!required });
+  const B = (name) => new BoolField({ name, required: false });
+  const D = (name, required) => new DateField({ name, required: !!required });
+  const S = (name, values, required) => new SelectField({ name, values, maxSelect: 1, required: !!required });
+  const R = (name, collectionId) => new RelationField({ name, collectionId, maxSelect: 1 });
 
-  // cohorts: one pilot cohort for V1
-  mk("cohorts", [text("code"), text("name"), text("timezone")]);
-  // learners: optional context, opt-in contacts only
-  mk("learners", [text("display_name", false), rel("cohort", "cohorts"), text("project_stage", false), text("device", false), text("contact_channel", false), text("contact_value", false), bool("opt_in_reminders")]);
-  // schedules: confirmed sessions + deadlines, same-for-cohort verified join link
-  mk("schedules", [rel("cohort", "cohorts"), sel("kind", ["live_session", "deadline"]), text("title"), date("starts_at"), text("timezone"), text("join_link", false), text("source"), text("action")]);
-  // reminder prefs per learner per category
-  mk("reminder_prefs", [rel("learner", "learners"), sel("category", ["deadline", "live_session", "checkin"]), bool("enabled_24h"), bool("enabled_3h"), bool("enabled_1h"), text("channel", false)]);
-  // reminders queue: computed 24h/3h/1h, withdrawn on change
-  mk("reminders_queue", [rel("schedule", "schedules"), rel("learner", "learners"), sel("offset", ["24h", "3h", "1h"]), date("due_at"), sel("status", ["queued", "sent", "withdrawn"]), text("channel", false)]);
-  // feedback: helpfulness vs resolution separate, stars optional
-  mk("feedback", [text("session_id", false), sel("vote", ["helped", "not_quite"]), text("stars", false), text("note", false), bool("resolved")]);
-  // content docs: approved only, owner/cohort/review date, withdrawn stops
-  mk("content_docs", [text("title"), text("body"), text("source"), text("owner"), date("review_date"), bool("withdrawn"), text("cohort", false)]);
+  const cohorts = mkBase("cohorts", "", "", AUTH, AUTH);
+  addFields(cohorts, [T("code", true), T("name", true), T("timezone", false)]);
+
+  const learners = mkBase("learners", AUTH, AUTH, AUTH, AUTH);
+  addFields(learners, [
+    T("display_name", false), R("cohort", cohorts.id), T("project_stage", false),
+    T("device", false), T("contact_channel", false), T("contact_value", false), B("opt_in_reminders"),
+  ]);
+
+  const schedules = mkBase("schedules", "", "", AUTH, AUTH);
+  addFields(schedules, [
+    R("cohort", cohorts.id), S("kind", ["live_session", "deadline"], true), T("title", true),
+    D("starts_at", true), T("timezone", true), T("join_link", false), T("source", true),
+    T("action", false), B("withdrawn"),
+  ]);
+
+  const prefs = mkBase("reminder_prefs", AUTH, AUTH, AUTH, AUTH);
+  addFields(prefs, [
+    R("learner", learners.id), S("category", ["deadline", "live_session", "checkin"], true),
+    B("enabled_24h"), B("enabled_3h"), B("enabled_1h"), T("channel", false),
+  ]);
+
+  const queue = mkBase("reminders_queue", AUTH, AUTH, AUTH, AUTH);
+  addFields(queue, [
+    R("schedule", schedules.id), R("learner", learners.id), S("offset", ["24h", "3h", "1h"], true),
+    D("due_at", true), S("status", ["queued", "sent", "withdrawn"], true), T("channel", false),
+  ]);
+
+  const feedback = mkBase("feedback", AUTH, AUTH, "", AUTH);
+  addFields(feedback, [
+    T("session_id", false), S("vote", ["helped", "not_quite"], true),
+    T("stars", false), T("note", false), B("resolved"),
+  ]);
+
+  const docs = mkBase("content_docs", "", "", AUTH, AUTH);
+  addFields(docs, [
+    T("title", true), T("body", true), T("source", true), T("owner", true),
+    D("review_date", false), B("withdrawn"), T("cohort", false),
+  ]);
 }, (app) => {});
