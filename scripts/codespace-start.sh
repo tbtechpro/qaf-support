@@ -45,6 +45,15 @@ if [ -f "$ROOT/.codespace-env" ] && [ ! -d "$ROOT/web/.next" -o "$ROOT/.codespac
   REBUILT=1
 fi
 
+if [ ! -d "$ROOT/worker/node_modules" ]; then
+  echo "[start] worker deps ..."
+  (cd "$ROOT/worker" && npm ci --omit=dev --no-audit --no-fund)
+fi
+if [ ! -f "$ROOT/.vapid.json" ]; then
+  echo "[start] generating VAPID push keys (once, gitignored) ..."
+  (cd "$ROOT/worker" && ROOT_VAPID="$ROOT/.vapid.json" node -e "const w=require('web-push');const k=w.generateVAPIDKeys();require('fs').writeFileSync(process.env.ROOT_VAPID,JSON.stringify({public:k.publicKey,private:k.privateKey}))")
+fi
+
 if [ ! -x "$PB_BIN" ]; then
   echo "[start] downloading pocketbase $PB_VER ..."
   mkdir -p "$ROOT/pocketbase/bin"

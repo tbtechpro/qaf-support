@@ -3,6 +3,38 @@
 // Rules: confirmed only; missing link/date -> skip + log "awaiting"; change -> withdraw old; no dups; tz visible WAT.
 const PB_URL = process.env.PB_URL || "http://pocketbase:8090";
 const WINDOW_MIN = 15;
+let webpush = null;
+let vapid = null;
+async function pushSetup() {
+  try {
+    webpush = (await import("web-push")).default;
+  } catch { return false; }
+  try {
+    const { readFileSync } = await import("node:fs");
+    vapid = JSON.parse(readFileSync(new URL("../.vapid.json", import.meta.url), "utf8"));
+    webpush.setVapidDetails("mailto:qaf-support@localhost", vapid.public, vapid.private);
+    return true;
+  } catch { return false; }
+}
+async function pushSend(ev, offset) {
+  if (!webpush || !vapid) return "push-unconfigured";
+  let subs = [];
+  try {
+    const r = await fetch(`${PB_URL}/api/collections/push_subscriptions/records?perPage=200`);
+    if (!r.ok) throw new Error("subs " + r.status);
+    subs = (await r.json()).items || [];
+  } catch (e) { return "subs-unreachable"; }
+  let sent = 0, dead = 0;
+  for (const s of subs) {
+    try {
+      await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, JSON.stringify({ title: "QAF reminder", body: reminderText(ev, offset) }));
+      sent++;
+    } catch (e) {
+      if (e && (e.statusCode === 404 || e.statusCode === 410)) dead++;
+    }
+  }
+  return `push sent=${sent} dead=${dead} subs=${subs.length}`;
+}
 export function computeDue(eventIso) {
   const t = new Date(eventIso).getTime();
   if (Number.isNaN(t)) return [];
@@ -37,12 +69,16 @@ async function fetchSchedules() {
 }
 async function tick() {
   const now = new Date();
+  const pushOn = await pushSetup();
   const schedules = await fetchSchedules();
   for (const ev of schedules) {
     if (!ev.starts_at) { console.log(`[worker] skip ${ev.title}: awaiting organizer confirmation (no date)`); continue; }
     if (ev.kind === "live_session" && !ev.join_link) console.log(`[worker] note ${ev.title}: no link yet — reminders will say awaiting, never invent.`);
     for (const { k, due } of computeDue(ev.starts_at)) {
-      if (isDue(due, now)) console.log(`[worker] DUE ${k} :: ${reminderText(ev, k).slice(0, 140)}`);
+      if (isDue(due, now)) {
+        const res = pushOn ? await pushSend(ev, k) : "push-unconfigured";
+        console.log(`[worker] DUE ${k} :: ${reminderText(ev, k).slice(0, 140)} :: ${res}`);
+      }
     }
   }
   // Organizer nudges use same offsets: 24h confirm-link/schedule, 1h join.

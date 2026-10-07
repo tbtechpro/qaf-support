@@ -5,6 +5,7 @@ pb_data/
 .env
 .env*.local
 .codespace-env
+.vapid.json
 .codespace-tools/
 web/next-env.d.ts
 web/dev.log
