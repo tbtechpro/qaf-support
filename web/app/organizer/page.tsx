@@ -31,7 +31,7 @@ export default function Organizer() {
         <input value={code} onChange={(e) => setCode(e.target.value)} onKeyDown={(e) => e.key === "Enter" && go()} placeholder="Invite code e.g. QAF-AB12CD (first organizer: any code)" style={{ ...inp, marginTop: 8 }} />
         {err && <p style={{ color: "var(--rose)" }}>{err}</p>}
         <button className="btn btn-p" style={{ marginTop: 10, width: "100%" }} onClick={go}>Sign in →</button>
-        <p className="meta">No code? <a href={requestAccessLink(process.env.NEXT_PUBLIC_ADMIN_WHATSAPP || "", email || "my email")} target="_blank">Request access via WhatsApp →</a> (owner sends you a one-time code in a DM).</p>
+        <p className="meta">No code? {process.env.NEXT_PUBLIC_ADMIN_WHATSAPP ? (<a href={requestAccessLink(process.env.NEXT_PUBLIC_ADMIN_WHATSAPP || "", email || "my email")} target="_blank" rel="noreferrer">Request access via WhatsApp →</a>) : (<span>Ask the owner directly for a one-time code (admin contact pending).</span>)} (owner sends you a one-time code in a DM).</p>
       </div>
     </main>
   );

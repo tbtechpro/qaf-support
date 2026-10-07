@@ -32,6 +32,13 @@ export default function Ask() {
     setQ("");
   };
   const lastUser = msgs.filter((m) => m.who === "user").slice(-2).map((m) => m.text).join(" | ");
+  const admin = process.env.NEXT_PUBLIC_ADMIN_WHATSAPP || "";
+  const waUrl = admin ? waLink(admin, `Hi, I need help: ${lastUser}`) : "";
+  const [copied, setCopied] = useState(false);
+  const copySummary = () => {
+    const t = `Hi, I need help: ${lastUser || "(no question yet)"}`;
+    if (navigator.clipboard) navigator.clipboard.writeText(t).then(() => setCopied(true)).catch(() => setCopied(false));
+  };
   return (
     <main>
       <div className="pills"><span className="pill hot">● PRIVATE CHAT</span><span className="pill">Sources cited</span><span className="pill">No auto-send</span></div>
@@ -53,7 +60,14 @@ export default function Ask() {
           <button className={vote === "helped" ? "yes" : ""} onClick={() => setVote("helped")}>👍 This helped</button>
           <button onClick={() => setVote("not_quite")}>🤔 Not quite</button>
           <button>★ Rate</button>
-          <a className="btn btn-g" style={{ padding: "7px 12px", fontSize: 12 }} href={waLink(process.env.NEXT_PUBLIC_ADMIN_WHATSAPP || "", `Hi, I need help: ${lastUser}`) || "#"} target="_blank">WhatsApp organizer →</a>
+          {waUrl ? (
+            <a className="btn btn-g" style={{ padding: "7px 12px", fontSize: 12 }} href={waUrl} target="_blank" rel="noreferrer">WhatsApp organizer →</a>
+          ) : (
+            <>
+              <button onClick={copySummary}>{copied ? "Copied ✓" : "Copy summary for organizer"}</button>
+              <span className="meta">Admin contact pending — your summary is copied; paste it to the organizer.</span>
+            </>
+          )}
         </div>
         {vote && <p className="meta">Vote recorded: {vote} (tracked separately from resolution — silence ≠ resolved).</p>}
       </div>
