@@ -1,0 +1,12 @@
+{
+  "name": "QAF Support",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+  "features": { "ghcr.io/devcontainers/features/docker-in-docker:2": {} },
+  "forwardPorts": [3000, 8090],
+  "portsAttributes": {
+    "3000": { "label": "QAF web", "visibility": "public" },
+    "8090": { "label": "PocketBase admin", "visibility": "private" }
+  },
+  "postStartCommand": "docker compose -f docker-compose.yml -f docker-compose.codespace.yml up -d --build",
+  "customizations": { "vscode": { "extensions": [] } }
+}

@@ -1,0 +1,20 @@
+# Codespaces / free-cloud override: publish app ports directly (no Caddy/TLS needed —
+# Codespaces terminates https at its proxy), skip heavy/optional services by default.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.codespace.yml up -d --build
+services:
+  web:
+    ports:
+      - "3000:3000"
+    environment:
+      - PB_URL=http://pocketbase:8090
+      - TZ=Africa/Lagos
+      - NEXT_PUBLIC_ADMIN_WHATSAPP=${NEXT_PUBLIC_ADMIN_WHATSAPP:-}
+  pocketbase:
+    ports:
+      - "8090:8090"
+  caddy:
+    profiles: ["caddy"]
+  ollama:
+    profiles: ["ai"]
+  uptime-kuma:
+    profiles: ["monitor"]
