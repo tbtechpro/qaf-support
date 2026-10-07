@@ -24,6 +24,14 @@ elif ! command -v node >/dev/null 2>&1; then
 fi
 node --version; npm --version
 
+if [ -d "$ROOT/.git" ]; then
+  git -C "$ROOT" fetch origin main >/dev/null 2>&1 || true
+  if [ "$(git -C "$ROOT" rev-parse HEAD)" != "$(git -C "$ROOT" rev-parse origin/main 2>/dev/null || echo none)" ]; then
+    git -C "$ROOT" pull --ff-only >/dev/null 2>&1 || true
+    rm -rf "$ROOT/web/.next"
+  fi
+fi
+
 if [ ! -x "$PB_BIN" ]; then
   echo "[start] downloading pocketbase $PB_VER ..."
   mkdir -p "$ROOT/pocketbase/bin"
