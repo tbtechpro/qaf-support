@@ -15,6 +15,8 @@ export default function Organizer() {
   const [ferr, setFerr] = useState("");
   const [msg, setMsg] = useState("");
   const [inviteFor, setInviteFor] = useState("");
+  const [csv, setCsv] = useState("");
+  const [preview, setPreview] = useState<{ title: string; err: string | null; done?: boolean; row?: Omit<Extra, "id" | "publishedBy"> }[]>([]);
   const [invites, setInvites] = useState(loadInvitesSafe());
   const [orgs, setOrgs] = useState<Org[]>([]);
   useEffect(() => { setMe(currentOrg()); setItems(loadExtra()); setOrgs(loadOrgs()); setInvites(loadInvites()); }, []);
@@ -49,6 +51,24 @@ export default function Organizer() {
     setF({ ...EMPTY });
   };
   const withdraw = (id: string) => persist(items.map((x) => (x.id === id ? { ...x, withdrawn: true } : x)));
+  const parseCsv = () => {
+    const lines = csv.split("\n").map((l) => l.trim()).filter(Boolean);
+    const rows = (lines[0] || "").startsWith("cohort_id,") ? lines.slice(1) : lines;
+    return rows.map((l) => {
+      const [cohort_id, type, title, datetime_iso, timezone, join_link, source, action] = l.split(",").map((s) => (s || "").trim());
+      const row = { cohort_id: cohort_id || "pilot-2026-01", kind: type === "deadline" ? "deadline" : "live_session", title: title || "", datetime_iso: datetime_iso || "", timezone: timezone || "Africa/Lagos", join_link: join_link || "", source: source || "", action: action || "" } as Omit<Extra, "id" | "publishedBy">;
+      return { title: row.title, err: validate({ kind: row.kind, title: row.title, datetime_iso: row.datetime_iso, join_link: row.join_link, source: row.source }), row };
+    });
+  };
+  const doPreview = () => { setPreview(parseCsv().map((p) => ({ ...p, done: false }))); setMsg(""); };
+  const doImport = () => {
+    const list = preview.length ? preview : parseCsv().map((p) => ({ ...p, done: false }));
+    const valid = list.filter((p) => !p.err && !p.done && p.row);
+    if (!valid.length) { setMsg("Nothing valid to import."); return; }
+    persist([...items, ...valid.map((p) => ({ ...p.row!, id: `org-${Date.now()}-${Math.floor(Math.random() * 1e6)}`, publishedBy: me.email }))]);
+    setPreview(list.map((p) => (p.err ? p : { ...p, done: true })));
+    setMsg(`Imported ${valid.length} row(s) as ${me.email} — 24h/3h/1h queued.`);
+  };
   const live = items.filter((x) => !x.withdrawn);
   const mkInvite = () => {
     if (!inviteFor.includes("@")) { setMsg("Enter an email to invite."); return; }
@@ -91,6 +111,21 @@ export default function Organizer() {
           {msg && <p style={{ color: "var(--emerald)" }}>{msg}</p>}
           <button className="btn btn-p" onClick={submit}>Publish as {me.email} → queue 24h / 3h / 1h</button>
         </div>
+      </div>
+      <div className="card" style={{ marginTop: 14 }}>
+        <h3>📥 Bulk import (CSV from coordinator)</h3>
+        <p className="meta">Paste rows like <span className="kbd">content/seed/schedule.csv</span>: cohort_id,type(live_session|deadline),title,datetime_iso,timezone,join_link,source,action. Invalid rows are rejected with reasons — nothing half-imported.</p>
+        <textarea value={csv} onChange={(e) => setCsv(e.target.value)} rows={4} placeholder={"pilot-2026-01,live_session,Orientation Live,2026-10-13T18:00:00+01:00,Africa/Lagos,https://meet.example.org/qaf-orientation,Schedule v1 6-Oct-2026,Join via same cohort link"} style={{ ...inp, fontFamily: "monospace", fontSize: 12 }} />
+        {preview.length > 0 && (
+          <table style={{ marginTop: 8 }}><thead><tr><th>Row</th><th>Check</th></tr></thead><tbody>
+            {preview.map((p, i) => (<tr key={i}><td>{p.title || "(untitled)"}</td><td style={{ color: p.err ? "var(--rose)" : "var(--emerald)" }}>{p.err || "ok → will publish"}</td></tr>))}
+          </tbody></table>
+        )}
+        <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+          <button className="btn btn-g" onClick={doPreview}>Preview</button>
+          <button className="btn btn-p" onClick={doImport}>Import valid ({preview.filter((p) => !p.err && !p.done).length}) as {me.email}</button>
+        </div>
+        {msg && <p style={{ color: "var(--emerald)" }}>{msg}</p>}
       </div>
       <div className="card" style={{ marginTop: 14 }}>
         <h3>Published ({live.length}) — attributed</h3>
