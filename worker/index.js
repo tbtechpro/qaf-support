@@ -23,7 +23,7 @@ export function reminderText(ev, offset, name = "") {
 }
 async function fetchSchedules() {
   try {
-    const r = await fetch(`${PB_URL}/api/collections/schedules/records?perPage=200&filter=${encodeURIComponent("withdrawn != true")}`);
+    const r = await fetch(`${PB_URL}/api/collections/schedules/records?perPage=200&filter=${encodeURIComponent("(withdrawn=false||withdrawn=null)")}`);
     if (!r.ok) throw new Error("pb " + r.status);
     const j = await r.json();
     return (j.items || []).map((x) => ({ id: x.id, kind: x.kind, title: x.title, starts_at: x.starts_at, timezone: x.timezone, join_link: x.join_link, source: x.source, action: x.action }));
