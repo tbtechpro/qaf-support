@@ -50,7 +50,7 @@ if ! pgrep -f "next-server" >/dev/null && ! curl -s -o /dev/null -m 3 http://loc
   (cd "$ROOT/web" && nohup npm run start -- -p 3000 </dev/null >"$LOG/web.log" 2>&1 &)
 fi
 
-if ! pgrep -f "worker/index.js" >/dev/null; then
+if ! pgrep -f "node index\.js" >/dev/null; then
   echo "[start] worker (PB_URL=localhost:8090) ..."
   (cd "$ROOT/worker" && PB_URL=http://localhost:8090 nohup node index.js </dev/null >"$LOG/worker.log" 2>&1 &)
 fi
