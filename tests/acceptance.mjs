@@ -21,7 +21,7 @@ globalThis.localStorage = new (class {
 process.env.NO_TICK = "1";
 const tmp = mkdtempSync(join(tmpdir(), "qaf-test-"));
 try {
-  execSync(`npx tsc lib/seed.ts lib/schedules.ts lib/organizers.ts --outDir ${tmp} --module commonjs --target es2020 --skipLibCheck`, { cwd: "web", stdio: "pipe" });
+  execSync(`npx tsc lib/seed.ts lib/schedules.ts lib/organizers.ts lib/feedback.ts --outDir ${tmp} --module commonjs --target es2020 --skipLibCheck`, { cwd: "web", stdio: "pipe" });
 } catch (e) {
   console.log("FAIL typescript compile: " + String(e.message).slice(0, 200));
   process.exit(1);
@@ -30,6 +30,7 @@ const req = createRequire(join(tmp, "x.js"));
 const seed = req(join(tmp, "seed.js"));
 const sched = req(join(tmp, "schedules.js"));
 const orgs = req(join(tmp, "organizers.js"));
+const fb = req(join(tmp, "feedback.js"));
 process.env.NO_TICK = "1";
 const worker = await import("../worker/index.js");
 
@@ -97,6 +98,14 @@ rep = seed.repairReply("wrong", "Some claim.");
 ok(rep.escalation && /organizer review/.test(rep.text), "wrong flags source for review + escalates");
 rep = seed.repairReply("organizer", "Anything.");
 ok(rep.escalation && /editable WhatsApp summary/.test(rep.text), "organizer offers reviewable handoff");
+
+// --- feedback records: clamped, trimmed, no PII beyond random session id ---
+let fr = fb.toFeedbackRecord("helped", 9, "x".repeat(600), "sid-123");
+ok(fr.stars === "5" && fr.note.length === 500, "stars clamped 1-5, note trimmed");
+const m = fb.metrics([{ vote: "helped", stars: "5" }, { vote: "not_quite", stars: "3" }, { vote: "not_quite", stars: "" }]);
+ok(m.total === 3 && m.helped === 1 && m.starsAvg === 4 && m.starsCount === 2, "metrics: counts + avg + response base");
+const m0 = fb.metrics([]);
+ok(m0.total === 0 && m0.helpfulness === null && m0.starsAvg === null, "empty metrics report nulls, not zeros");
 
 console.log(fail ? `\n${fail} FAILURES (${pass} passed)` : `\nALL PASS (${pass})`);
 rmSync(tmp, { recursive: true, force: true });

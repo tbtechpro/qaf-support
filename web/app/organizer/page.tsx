@@ -16,6 +16,11 @@ export default function Organizer() {
   const [msg, setMsg] = useState("");
   const [inviteFor, setInviteFor] = useState("");
   const [csv, setCsv] = useState("");
+  const [fb, setFb] = useState<{ vote: string; stars: string; note: string; created: string }[]>([]);
+  const [fbLive, setFbLive] = useState(false);
+  useEffect(() => {
+    fetch("/api/feedback").then((r) => r.json()).then((j) => { setFb(j.items || []); setFbLive(!!j.items); }).catch(() => {});
+  }, [me]);
   const [preview, setPreview] = useState<{ title: string; err: string | null; done?: boolean; row?: Omit<Extra, "id" | "publishedBy"> }[]>([]);
   const [invites, setInvites] = useState(loadInvitesSafe());
   const [orgs, setOrgs] = useState<Org[]>([]);
@@ -132,6 +137,20 @@ export default function Organizer() {
         <table><thead><tr><th>Event</th><th>Date</th><th>Link / Action</th><th>By</th><th></th></tr></thead><tbody>
           {live.map((s) => (<tr key={s.id}><td>{s.title}</td><td>{s.datetime_iso}</td><td>{s.kind === "live_session" ? s.join_link : s.action}</td><td>{s.publishedBy || "—"}</td><td><button onClick={() => withdraw(s.id)} style={linkBtn}>withdraw</button></td></tr>))}
         </tbody></table>
+      </div>
+      <div className="card" style={{ marginTop: 14 }}>
+        <h3>📊 Pilot signals {fbLive ? "(live)" : "(waiting for votes)"}</h3>
+        {(() => {
+          const total = fb.length;
+          const helped = fb.filter((f) => f.vote === "helped").length;
+          const stars = fb.map((f) => parseInt(f.stars || "", 10)).filter((n) => n >= 1 && n <= 5);
+          const avg = stars.length ? (stars.reduce((a, b) => a + b, 0) / stars.length).toFixed(1) : "—";
+          return <p className="meta">Helpfulness: {total ? `${Math.round((helped / total) * 100)}% (${helped}/${total})` : "no votes yet"} · ★ avg {avg} ({stars.length}) · report counts + response rate alongside %.</p>;
+        })()}
+        {fb.filter((f) => f.vote === "not_quite" || f.note).slice(0, 20).map((f, i) => (
+          <p key={i} className="meta" style={{ borderTop: "1px solid var(--line)", paddingTop: 6 }}>“{f.note || "(no note)"}” — {f.vote}{f.stars ? ` · ${f.stars}★` : ""} · {String(f.created || "").slice(0, 10)}</p>
+        ))}
+        {fb.length === 0 && <p className="meta">No feedback yet — votes and ★ ratings from Ask land here with notes; “looks wrong” flags arrive marked for source review.</p>}
       </div>
     </main>
   );
