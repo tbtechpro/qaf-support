@@ -1,8 +1,10 @@
 {
   "name": "QAF Support",
   "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
-  "forwardPorts": [3000, 8090],
-  "portsAttributes": {
+  "features": {
+    "ghcr.io/devcontainers/features/sshd:1": { "version": "latest" }
+  },
+  "forwardPorts": [3000, 8090],  "portsAttributes": {
     "3000": { "label": "QAF web", "visibility": "public" },
     "8090": { "label": "PocketBase admin", "visibility": "private" }
   },
