@@ -60,9 +60,13 @@ if [ ! -x "$PB_BIN" ]; then
   curl -sSL -o /tmp/pb.zip "https://github.com/pocketbase/pocketbase/releases/download/v${PB_VER}/pocketbase_${PB_VER}_linux_amd64.zip"
   if command -v unzip >/dev/null 2>&1; then
     unzip -o -q /tmp/pb.zip -d "$ROOT/pocketbase/bin"
-  else
+  elif command -v python3 >/dev/null 2>&1; then
     echo "[start] no unzip; extracting with python3 ..."
     python3 -c "import zipfile,os;zipfile.ZipFile('/tmp/pb.zip').extractall(os.environ['PB_DEST'])" PB_DEST="$ROOT/pocketbase/bin"
+  else
+    echo "[start] installing unzip via apt ..."
+    sudo apt-get update -qq && sudo apt-get install -y -qq unzip
+    unzip -o -q /tmp/pb.zip -d "$ROOT/pocketbase/bin"
   fi
   chmod +x "$PB_BIN"
 fi
