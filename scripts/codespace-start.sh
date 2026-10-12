@@ -58,11 +58,19 @@ if [ ! -x "$PB_BIN" ]; then
   echo "[start] downloading pocketbase $PB_VER ..."
   mkdir -p "$ROOT/pocketbase/bin"
   curl -sSL -o /tmp/pb.zip "https://github.com/pocketbase/pocketbase/releases/download/v${PB_VER}/pocketbase_${PB_VER}_linux_amd64.zip"
-  unzip -o -q /tmp/pb.zip -d "$ROOT/pocketbase/bin"
+  if command -v unzip >/dev/null 2>&1; then
+    unzip -o -q /tmp/pb.zip -d "$ROOT/pocketbase/bin"
+  else
+    echo "[start] no unzip; extracting with python3 ..."
+    python3 -c "import zipfile,os;zipfile.ZipFile('/tmp/pb.zip').extractall(os.environ['PB_DEST'])" PB_DEST="$ROOT/pocketbase/bin"
+  fi
   chmod +x "$PB_BIN"
 fi
 
-if ! pgrep -f "pocketbase.*serve" >/dev/null; then
+# pgrep may be absent on slim images; treat "no pgrep" as "not running" (start it).
+isup() { command -v pgrep >/dev/null 2>&1 && pgrep -f "$1" >/dev/null 2>&1; }
+
+if ! isup "pocketbase.*serve"; then
   echo "[start] pocketbase :8090 ..."
   (cd "$ROOT" && nohup "$PB_BIN" serve --http=0.0.0.0:8090 --dir="$ROOT/pocketbase/pb_data" --migrationsDir="$ROOT/pocketbase/pb_migrations" </dev/null >"$LOG/pocketbase.log" 2>&1 &)
 fi
@@ -79,12 +87,12 @@ if [ "${REBUILT:-0}" = 1 ]; then
   pkill -f "[n]ext-server" 2>/dev/null || true
   sleep 3
 fi
-if ! pgrep -f "next-server" >/dev/null && ! curl -s -o /dev/null -m 3 http://localhost:3000/; then
+if ! isup "next-server" && ! curl -s -o /dev/null -m 3 http://localhost:3000/; then
   echo "[start] web :3000 ..."
   (cd "$ROOT/web" && nohup npm run start -- -p 3000 </dev/null >"$LOG/web.log" 2>&1 &)
 fi
 
-if ! pgrep -f "index\.js" >/dev/null; then
+if ! isup "index\.js"; then
   echo "[start] worker (PB_URL=localhost:8090) ..."
   (cd "$ROOT/worker" && PB_URL=http://localhost:8090 nohup node index.js </dev/null >"$LOG/worker.log" 2>&1 &)
 fi
