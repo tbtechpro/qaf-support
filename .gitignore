@@ -6,6 +6,9 @@ pb_data/
 .env*.local
 .codespace-env
 .vapid.json
+android/*.keystore
+android/*.pw
+android/*.jks
 .codespace-tools/
 web/next-env.d.ts
 web/dev.log

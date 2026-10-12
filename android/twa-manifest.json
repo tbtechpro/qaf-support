@@ -1,0 +1,19 @@
+{
+  "packageId": "org.qubators.qafsupport",
+  "host": "qaf.example.org",
+  "name": "QAF Support",
+  "launcherName": "QAF Support",
+  "display": "standalone",
+  "themeColor": "#10D9A3",
+  "navigationColor": "#0D1428",
+  "backgroundColor": "#0D1428",
+  "startUrl": "/",
+  "iconUrl": "https://qaf.example.org/icon-512.png",
+  "maskableIconUrl": "https://qaf.example.org/maskable-512.png",
+  "monochromeIconUrl": "https://qaf.example.org/icon-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "enableNotifications": true,
+  "shortcuts": [],
+  "signingKey": { "path": "./qaf-release.keystore", "alias": "qaf" },
+  "generatorUrl": "https://github.com/tbtechpro/qaf-support"
+}
