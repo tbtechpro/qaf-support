@@ -35,9 +35,9 @@ if (-not (Test-Path $PB)) { throw "PocketBase exe missing: $PB" }
 Start-Svc "pocketbase" 8090 $PB @("serve", "--http=127.0.0.1:8090", "`"--dir=$ROOT\pocketbase\pb_data`"", "`"--migrationsDir=$ROOT\pocketbase\pb_migrations`"") $ROOT
 
 $node = (Get-Command node).Source
-$npmCli = Join-Path (Split-Path -Parent $node) "node_modules\npm\bin\npm-cli.js"
+$nextBin = Join-Path $ROOT "web\node_modules\next\dist\bin\next"
 $env:NEXT_PUBLIC_ADMIN_WHATSAPP = "2348078239107"
-Start-Svc "web" 3000 $node @("`"$npmCli`"", "run", "start", "--", "-p", "3000") (Join-Path $ROOT "web")
+Start-Svc "web" 3000 $node @("`"$nextBin`"", "start", "-p", "3000") (Join-Path $ROOT "web")
 $env:PB_URL = "http://localhost:8090"
 Start-Svc "worker" 0 $node @("index.js") (Join-Path $ROOT "worker") "worker\index.js"
 Write-Host "[pilot] launched. Verify with: scripts\pilot-status.ps1 or curl localhost:3000 (allow ~30s cold start)."

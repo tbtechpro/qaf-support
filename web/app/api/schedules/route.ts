@@ -23,8 +23,23 @@ export async function GET() {
         source: x.source,
         action: x.action || "",
       }));
-    return NextResponse.json({ live: true, items });
+    const withdrawnTitles = await fetchWithdrawnTitles();
+    return NextResponse.json({ live: true, items, withdrawnTitles });
   } catch {
-    return NextResponse.json({ live: false, items: SCHEDULES });
+    return NextResponse.json({ live: false, items: SCHEDULES, withdrawnTitles: [] as string[] });
+  }
+}
+
+async function fetchWithdrawnTitles(): Promise<string[]> {
+  try {
+    const w = await fetch(
+      `${PB}/api/collections/schedules/records?perPage=200&filter=${encodeURIComponent("withdrawn=true")}`,
+      { next: { revalidate: 60 } }
+    );
+    if (!w.ok) return [];
+    const j = await w.json();
+    return ((j.items || []) as { title: string }[]).map((x) => x.title);
+  } catch {
+    return [];
   }
 }

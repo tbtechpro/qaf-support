@@ -28,14 +28,21 @@ export function mergeByTitle(...lists: Schedule[][]): Schedule[] {
   }
   return out;
 }
-export async function fetchLive(): Promise<{ live: boolean; items: Schedule[] }> {
+export type LiveFeed = { live: boolean; items: Schedule[]; withdrawnTitles?: string[] };
+export async function fetchLive(): Promise<LiveFeed> {
   try {
     const r = await fetch("/api/schedules", { cache: "no-store" });
     if (!r.ok) throw new Error("http " + r.status);
-    return (await r.json()) as { live: boolean; items: Schedule[] };
+    return (await r.json()) as LiveFeed;
   } catch {
     return { live: false, items: [] };
   }
+}
+// Drop static-seed rows whose title organizers withdrew in PB (withdrawn stops everywhere).
+export function withoutWithdrawn<T extends { title: string }>(items: T[], titles?: string[]): T[] {
+  if (!titles || titles.length === 0) return items;
+  const drop = new Set(titles);
+  return items.filter((s) => !drop.has(s.title));
 }
 export function validate(ev: { kind: string; title: string; datetime_iso: string; join_link: string; source: string }): string | null {
   if (!ev.title.trim()) return "Title is required.";

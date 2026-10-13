@@ -1,15 +1,17 @@
 "use client";
 import { useEffect, useState } from "react";
-import { allSchedules, fetchLive, mergeByTitle } from "../../lib/schedules";
+import { allSchedules, fetchLive, mergeByTitle, withoutWithdrawn } from "../../lib/schedules";
 import type { Schedule } from "../../lib/seed";
 export default function Reminders() {
   const [prefs, setPrefs] = useState({ deadline: true, live: true, checkin: true, wa: false });
   const [sched, setSched] = useState<(Schedule & { id?: string })[]>([]);
   const [live, setLive] = useState(false);
+  const [dropped, setDropped] = useState<string[]>([]);
   useEffect(() => {
     const refresh = () => {
-      fetchLive().then(({ live: ok, items }) => {
+      fetchLive().then(({ live: ok, items, withdrawnTitles }) => {
         setLive(ok);
+        setDropped(withdrawnTitles || []);
         setSched(mergeByTitle(items, allSchedules()));
       }).catch(() => setSched(allSchedules()));
     };
@@ -48,7 +50,7 @@ export default function Reminders() {
         </label>
         <label className="switch">WhatsApp / email (opt-in + verified only)<input type="checkbox" checked={prefs.wa} onChange={() => t("wa")} /></label>
       </div>
-      {sched.filter((s) => (s.kind === "deadline" ? prefs.deadline : prefs.live)).map((s, i) => (
+      {withoutWithdrawn(sched.filter((s) => (s.kind === "deadline" ? prefs.deadline : prefs.live)), dropped).map((s, i) => (
         <div key={i} className={`ev ${s.kind === "live_session" ? "live" : ""}`}>
           <b>{s.kind === "live_session" ? "🎥" : "📝"} {s.title}</b> — {s.datetime_iso} ({s.timezone})<br />
           {s.kind === "live_session" ? <>Join (same for cohort): <u>{s.join_link || "Awaiting organizer confirmation"}</u></> : <>Action: {s.action}</>}<br />
