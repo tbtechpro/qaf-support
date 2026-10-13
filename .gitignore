@@ -1,6 +1,7 @@
 node_modules/
 .next/
 pb_data/
+pocketbase/bin/
 *.log
 .env
 .env*.local
@@ -10,5 +11,6 @@ android/*.keystore
 android/*.pw
 android/*.jks
 .codespace-tools/
+.local-logs/
 web/next-env.d.ts
 web/dev.log
