@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Splash: deep-navy background while the Trusted Web Activity boots. -->
+    <style name="Theme.QAF" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/qaf_bg</item>
+        <item name="android:statusBarColor">@color/qaf_bg</item>
+        <item name="android:navigationBarColor">@color/qaf_bg</item>
+    </style>
+</resources>
