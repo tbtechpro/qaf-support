@@ -18,7 +18,7 @@
             android:exported="true">
             <meta-data
                 android:name="android.support.customtabs.trusted.DEFAULT_URL"
-                android:value="https://double-sci-pursue-ambien.trycloudflare.com/" />
+                android:value="https://distribute-reliability-necessary-sheet.trycloudflare.com/" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -29,7 +29,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:scheme="https"
-                    android:host="double-sci-pursue-ambien.trycloudflare.com"
+                    android:host="distribute-reliability-necessary-sheet.trycloudflare.com"
                     android:pathPrefix="/" />
             </intent-filter>
         </activity>

@@ -2,5 +2,5 @@
 <resources>
     <string name="app_name">QAF Support</string>
     <!-- Must match https://<host>/.well-known/assetlinks.json (web side). -->
-    <string name="asset_statements">[{"relation": ["delegate_permission/common.handle_all_urls"], "target": {"namespace": "web", "site": "https://double-sci-pursue-ambien.trycloudflare.com"}}]</string>
+    <string name="asset_statements">[{"relation": ["delegate_permission/common.handle_all_urls"], "target": {"namespace": "web", "site": "https://distribute-reliability-necessary-sheet.trycloudflare.com"}}]</string>
 </resources>
