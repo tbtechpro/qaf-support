@@ -32,14 +32,14 @@
             android:exported="true">
             <meta-data
                 android:name="android.support.customtabs.trusted.DEFAULT_URL"
-                android:value="https://distribute-reliability-necessary-sheet.trycloudflare.com/" />
+                android:value="https://warranties-hansen-opponents-ham.trycloudflare.com/" />
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:scheme="https"
-                    android:host="distribute-reliability-necessary-sheet.trycloudflare.com"
+                    android:host="warranties-hansen-opponents-ham.trycloudflare.com"
                     android:pathPrefix="/" />
             </intent-filter>
         </activity>

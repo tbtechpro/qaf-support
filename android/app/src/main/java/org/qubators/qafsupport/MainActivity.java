@@ -15,7 +15,7 @@ import androidx.browser.customtabs.CustomTabsIntent;
  * The app always opens — no browser dependency.
  */
 public class MainActivity extends Activity {
-    static final String START_URL = "https://distribute-reliability-necessary-sheet.trycloudflare.com/";
+    static final String START_URL = "https://warranties-hansen-opponents-ham.trycloudflare.com/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
