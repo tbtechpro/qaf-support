@@ -8,7 +8,6 @@ import android.os.Bundle;
 
 import androidx.browser.customtabs.CustomTabsClient;
 import androidx.browser.customtabs.CustomTabsIntent;
-import androidx.browser.trusted.TrustedWebActivity;
 
 /**
  * Launcher router: fullscreen TWA when a verified browser exists,
@@ -24,12 +23,12 @@ public class MainActivity extends Activity {
         Uri data = getIntent() != null ? getIntent().getData() : null;
         String url = (data != null && "https".equals(data.getScheme())) ? data.toString() : START_URL;
 
-        // 1) Fullscreen Trusted Web Activity (verified host, no URL bar).
+        // 1) Fullscreen Trusted Web Activity via the browser-helper launcher.
         try {
             String provider = CustomTabsClient.getPackageName(this, null);
             if (provider == null) throw new ActivityNotFoundException("no custom-tabs provider");
             Intent twa = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            twa.setClass(this, TrustedWebActivity.class);
+            twa.setClassName(this, "com.google.androidbrowserhelper.trusted.LauncherActivity");
             startActivity(twa);
             finish();
             return;

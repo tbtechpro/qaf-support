@@ -16,7 +16,7 @@
             android:name="asset_statements"
             android:resource="@string/asset_statements" />
 
-        <!-- Router: TWA -> Custom Tab -> WebView. Always opens. -->
+        <!-- Router: Custom Tab -> WebView. Always opens. -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -24,6 +24,15 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <!-- Fullscreen TWA entry (browser-helper). Handles verified links. -->
+        <activity
+            android:name="com.google.androidbrowserhelper.trusted.LauncherActivity"
+            android:exported="true">
+            <meta-data
+                android:name="android.support.customtabs.trusted.DEFAULT_URL"
+                android:value="https://distribute-reliability-necessary-sheet.trycloudflare.com/" />
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -34,10 +43,6 @@
                     android:pathPrefix="/" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name="androidx.browser.trusted.TrustedWebActivity"
-            android:exported="false" />
 
         <activity
             android:name=".WebViewFallbackActivity"
