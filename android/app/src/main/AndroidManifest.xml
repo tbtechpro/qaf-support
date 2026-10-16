@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Trusted Web Activity: QAF Support PWA, same verified host as the pilot link. -->
+    <!-- WebView fallback needs its own network permission (TWA uses Chrome's). -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
         android:label="@string/app_name"
         android:icon="@mipmap/ic_launcher"
@@ -13,12 +16,10 @@
             android:name="asset_statements"
             android:resource="@string/asset_statements" />
 
+        <!-- Router: TWA -> Custom Tab -> WebView. Always opens. -->
         <activity
-            android:name="androidx.browser.trusted.TrustedWebActivity"
+            android:name=".MainActivity"
             android:exported="true">
-            <meta-data
-                android:name="android.support.customtabs.trusted.DEFAULT_URL"
-                android:value="https://distribute-reliability-necessary-sheet.trycloudflare.com/" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -33,5 +34,13 @@
                     android:pathPrefix="/" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name="androidx.browser.trusted.TrustedWebActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".WebViewFallbackActivity"
+            android:exported="false" />
     </application>
 </manifest>
