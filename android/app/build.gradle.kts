@@ -40,4 +40,6 @@ android {
 
 dependencies {
     implementation("androidx.browser:browser:1.8.0")
+    // Provides androidx.browser.trusted.TrustedWebActivity (fullscreen TWA).
+    implementation("com.google.androidbrowserhelper:androidbrowserhelper:2.5.0")
 }
